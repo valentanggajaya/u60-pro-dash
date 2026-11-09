@@ -40,6 +40,8 @@ pub struct Controller {
     guards: BTreeMap<String, Guard>,
     outcome: Option<String>,
     keep_draft: bool,
+    automatic: bool,
+    expected: BTreeMap<String, String>,
     history: super::history::History,
     telemetry: super::telemetry::Telemetry,
 }
@@ -72,6 +74,8 @@ impl Default for Controller {
             guards: BTreeMap::new(),
             outcome: None,
             keep_draft: false,
+            automatic: false,
+            expected: BTreeMap::new(),
             history: Default::default(),
             telemetry: Default::default(),
         }
@@ -144,6 +148,11 @@ impl Controller {
             .is_some_and(|t| t.elapsed() < Duration::from_secs(60))
     }
     pub fn cancel(&mut self) {
+        self.automatic = false;
+        for value in self.expected.values_mut() {
+            value.zeroize();
+        }
+        self.expected.clear();
         self.telemetry.interrupt();
         for value in self.draft.values_mut() {
             value.zeroize();
@@ -227,6 +236,32 @@ impl Controller {
                 .insert("__history".into(), Ok(self.history.value()));
         }
         let mut page = super::page(&self.id, &self.data);
+        if !self.expected.is_empty() {
+            let verified = self.expected.iter().all(|(key, value)| {
+                if matches!(self.id.as_str(), "wifi2" | "wifi5") && key.starts_with("key_") {
+                    super::data(&self.data, "settings")[key].as_str() == Some(value.as_str())
+                } else if self.id == "guest" && key == "guest_key" {
+                    super::data(&self.data, "settings")["key"].as_str() == Some(value.as_str())
+                } else {
+                    page.field(key).is_ok_and(|f| f.value == *value)
+                }
+            });
+            self.outcome = Some(
+                if verified {
+                    crate::i18n::tr("已应用并核对实际值。")
+                } else {
+                    crate::i18n::tr("设备尚未确认修改，请核对实际状态。")
+                }
+                .into(),
+            );
+            if !verified {
+                self.draft.append(&mut self.expected);
+            }
+            for value in self.expected.values_mut() {
+                value.zeroize();
+            }
+            self.expected.clear();
+        }
         self.telemetry
             .record(&page.charts, &sampled_sources, Instant::now());
         self.telemetry.decorate(&mut page.charts, Instant::now());
@@ -250,20 +285,26 @@ impl Controller {
             .filter_map(|r| r.as_ref().err().map(Error::message))
             .collect::<std::collections::BTreeSet<_>>();
         self.notice = if errors.is_empty() {
-            if restored {
+            if let Some(outcome) = &self.outcome {
+                outcome.clone()
+            } else if restored {
                 crate::i18n::tr("状态已重新读取，请检查更改后保存。").into()
             } else {
-                self.outcome.clone().unwrap_or_default()
+                String::new()
             }
         } else {
-            crate::i18n::format(
+            let read_error = crate::i18n::format(
                 "部分状态读取失败：{0}",
                 &[errors
                     .into_iter()
                     .collect::<Vec<_>>()
                     .join("；")
                     .to_string()],
-            )
+            );
+            match &self.outcome {
+                Some(outcome) => format!("{outcome}\n{read_error}"),
+                None => read_error,
+            }
         };
     }
     fn schedule_poll(&mut self) {
@@ -365,6 +406,22 @@ impl Controller {
                     self.completed += 1;
                     self.data.insert("last_result".into(), Ok(value));
                     if self.queue.is_empty() {
+                        if self.automatic {
+                            self.expected = self
+                                .page
+                                .fields
+                                .iter()
+                                .filter(|f| {
+                                    f.dirty()
+                                        && (!f.secret
+                                            || matches!(
+                                                self.id.as_str(),
+                                                "wifi2" | "wifi5" | "guest"
+                                            ))
+                                })
+                                .map(|f| (f.key.clone(), f.value.clone()))
+                                .collect();
+                        }
                         self.writes = 0;
                         if self.keep_draft {
                             self.draft = self
@@ -382,6 +439,15 @@ impl Controller {
                     }
                 }
                 Err(error) => {
+                    if self.automatic {
+                        self.draft = self
+                            .page
+                            .fields
+                            .iter()
+                            .filter(|f| f.dirty())
+                            .map(|f| (f.key.clone(), f.value.clone()))
+                            .collect();
+                    }
                     self.queue.clear();
                     self.writes = 0;
                     self.confirmation = None;
@@ -428,6 +494,7 @@ impl Controller {
         Ok(())
     }
     pub fn prepare(&mut self, index: usize) -> Result<()> {
+        self.automatic = false;
         self.pause_background();
         ensure!(
             !self.busy(),
@@ -483,6 +550,33 @@ impl Controller {
         plan.phrase = action.phrase.clone();
         self.confirmation = Some(plan);
         Ok(())
+    }
+    pub fn auto_apply(&mut self) -> Result<()> {
+        let Some(action) = super::automatic::action(&self.id) else {
+            return Ok(());
+        };
+        if !self.page.dirty() {
+            return Ok(());
+        }
+        let index = self
+            .page
+            .actions
+            .iter()
+            .position(|a| a.id == action)
+            .ok_or_else(|| anyhow::anyhow!("Missing settings action"))?;
+        self.prepare(index)?;
+        self.automatic = true;
+        if !super::automatic::interruption(&self.id, &self.page, &self.data) {
+            self.confirm("")?;
+        }
+        Ok(())
+    }
+    pub fn cancel_confirmation(&mut self) {
+        self.confirmation = None;
+        if self.automatic {
+            self.replace_page(super::page(&self.id, &self.data));
+            self.automatic = false;
+        }
     }
     pub fn confirm(&mut self, phrase: &str) -> Result<()> {
         ensure!(
@@ -589,6 +683,7 @@ impl Controller {
         self.live_keys.clear();
         for read in &self.reads {
             let (topic, nested) = match read.request.path.as_str() {
+                "/api/device/operating" => ("operating", None),
                 "/api/network/signal" => ("signal", None),
                 "/api/network/speeds" => ("traffic", None),
                 "/api/battery" => ("battery", None),
@@ -680,6 +775,110 @@ impl Controller {
 mod tests {
     use super::*;
     use serde_json::json;
+    #[test]
+    fn automatic_settings_verify_readback_and_scope_changes_can_be_cancelled() {
+        let original = json!({"charge_limit_enabled":true,"charge_limit":80,"hysteresis":5,"charging_stopped":false});
+        for accepted in [true, false] {
+            let mut c = Controller::default();
+            c.seed("charge", original.clone());
+            let i = c
+                .page
+                .fields
+                .iter()
+                .position(|f| f.key == "charge_limit")
+                .unwrap();
+            c.edit(i, "85".into()).unwrap();
+            c.auto_apply().unwrap();
+            assert!(c.confirmation.is_none());
+            let mut writes = 0;
+            let mut sequence = 700;
+            while let Some((key, request)) = c.queue.pop_front() {
+                sequence += 1;
+                let value = if key.as_ref().is_some_and(|k| k.starts_with("__guard/")) {
+                    original.clone()
+                } else if key.is_none() {
+                    writes += 1;
+                    assert_eq!(request.body.as_ref().unwrap()["charge_limit"], 85);
+                    json!({})
+                } else {
+                    let mut actual = original.clone();
+                    if accepted {
+                        actual["charge_limit"] = json!(85);
+                    }
+                    actual
+                };
+                c.pending = Some(Pending {
+                    id: sequence,
+                    key,
+                    request,
+                    attempt: 0,
+                });
+                c.receive(sequence, Ok(value));
+                assert!(sequence < 710, "writes must not be replayed");
+            }
+            assert_eq!(writes, 1);
+            assert_eq!(c.page.dirty(), !accepted);
+            assert_eq!(c.notice == "已应用并核对实际值。", accepted);
+            if !accepted {
+                assert_eq!(c.notice, "设备尚未确认修改，请核对实际状态。");
+            }
+        }
+        let mut c = Controller::default();
+        c.seed_data(
+            "proxy-service",
+            Data::from([(
+                "status".into(),
+                Ok(json!({"running":true,"mode":"rule","capture":"local"})),
+            )]),
+        );
+        let i = c
+            .page
+            .fields
+            .iter()
+            .position(|f| f.key == "capture")
+            .unwrap();
+        c.edit(i, "hotspot".into()).unwrap();
+        c.auto_apply().unwrap();
+        assert!(c.confirmation.is_some());
+        assert!(c.queue.is_empty());
+        c.cancel_confirmation();
+        assert!(!c.page.dirty());
+        assert_eq!(c.page.field("capture").unwrap().value, "local");
+        assert!(c.queue.is_empty());
+    }
+    #[test]
+    fn restoring_a_failed_edit_keeps_the_error_visible() {
+        let mut c = charge();
+        c.draft.insert("charge_limit".into(), "85".into());
+        c.outcome = Some("Setting could not be saved: disk full".into());
+        c.finish_reads();
+        assert!(c.page.dirty());
+        assert!(c.notice.contains("disk full"));
+        c.data.insert("settings".into(), Err(Error::Unavailable));
+        c.finish_reads();
+        assert!(c.notice.contains("disk full"));
+        assert!(c.notice.contains("部分状态读取失败"));
+    }
+
+    #[test]
+    fn wifi_password_readback_is_verified_without_filling_the_password_editor() {
+        let secret = "Test'$\\&-only";
+        for accepted in [true, false] {
+            let mut c = Controller::default();
+            c.seed(
+                "wifi2",
+                json!({"key_2g":if accepted { secret } else { "Old-example" }}),
+            );
+            c.expected.insert("key_2g".into(), secret.into());
+            c.finish_reads();
+            assert_eq!(c.notice == "已应用并核对实际值。", accepted);
+            assert_eq!(
+                c.page.field("key_2g").unwrap().value,
+                if accepted { "" } else { secret }
+            );
+            assert!(c.expected.is_empty());
+        }
+    }
     fn charge() -> Controller {
         let mut c = Controller::default();
         assert!(c.open("charge"));

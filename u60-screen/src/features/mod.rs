@@ -1,4 +1,5 @@
 //! Native feature contracts. Browser fixtures are never request bodies.
+pub mod automatic;
 pub mod controller;
 mod demo;
 mod esim;
@@ -7,6 +8,7 @@ mod history;
 mod lists;
 mod messages;
 mod network;
+pub(crate) mod operating;
 mod proxy;
 mod radio;
 mod refresh;
@@ -407,7 +409,8 @@ pub fn reads(id: &str) -> Option<Vec<Read>> {
     if id == "history" {
         return Some(vec![]);
     }
-    settings::reads(id)
+    operating::reads(id)
+        .or_else(|| settings::reads(id))
         .or_else(|| status::reads(id))
         .or_else(|| network::reads(id))
         .or_else(|| lists::reads(id))
@@ -444,6 +447,9 @@ pub fn page(id: &str, readings: &Data) -> Page {
     result
 }
 fn feature_page(id: &str, readings: &Data) -> Page {
+    if operating::reads(id).is_some() {
+        return operating::page(id, readings);
+    }
     if proxy::reads(id).is_some() {
         return proxy::page(id, readings);
     }
@@ -509,6 +515,9 @@ pub fn visibility(id: &str, page: &mut Page) {
     }
 }
 pub fn plan(id: &str, action: &str, page: &Page, readings: &Data) -> Result<Plan> {
+    if operating::reads(id).is_some() {
+        return operating::plan(id, action, page, readings);
+    }
     if proxy::reads(id).is_some() {
         return proxy::plan(id, action, page, readings);
     }
@@ -553,6 +562,14 @@ pub fn qr_version(value: &str) -> Option<u8> {
         .map(|qr| qr.version().value())
 }
 pub fn qr_image_version(value: &str, size: u32, min_version: u8) -> Option<slint::Image> {
+    qr_pixels(value, size, min_version, 2)
+}
+/// Dense credentials still have a fixed thumbnail; tapping opens the full
+/// two-pixel-or-larger join code. Never resize the QR column to fit text.
+pub fn qr_thumbnail(value: &str, size: u32, min_version: u8) -> Option<slint::Image> {
+    qr_pixels(value, size, min_version, 1)
+}
+fn qr_pixels(value: &str, size: u32, min_version: u8, minimum_scale: i32) -> Option<slint::Image> {
     use qrcodegen::{QrCode, QrCodeEcc, QrSegment, Version};
     if value.len() > 2048 {
         return None;
@@ -568,7 +585,7 @@ pub fn qr_image_version(value: &str, size: u32, min_version: u8) -> Option<slint
     .ok()?;
     let modules = qr.size() + 8;
     let scale = size as i32 / modules;
-    if scale < 2 {
+    if scale < minimum_scale {
         return None;
     }
     let margin = (size as i32 - modules * scale) / 2;
@@ -583,6 +600,7 @@ pub fn qr_image_version(value: &str, size: u32, min_version: u8) -> Option<slint
 }
 pub fn topics(id: &str) -> &'static [&'static str] {
     match id {
+        "quick-controls" | "mobile-modes" | "power-save" => &["operating"],
         "signal-live" | "carriers" => &["signal"],
         "resources" => &["health"],
         "battery-details" => &["charger", "battery_info"],

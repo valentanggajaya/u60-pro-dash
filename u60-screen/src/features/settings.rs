@@ -16,7 +16,6 @@ fn endpoint(id: &str) -> Option<&'static str> {
         "wifi2" | "wifi5" => "/api/wifi/status",
         "guest" => "/api/wifi/guest",
         "charge" => "/api/device/charge-control",
-        "power-save" => "/api/device/power-save",
         "fast-boot" => "/api/device/fast-boot",
         "auto-sleep" => "/api/device/auto-sleep",
         "ttl" => "/api/router/ttl",
@@ -28,15 +27,7 @@ fn endpoint(id: &str) -> Option<&'static str> {
 }
 pub fn reads(id: &str) -> Option<Vec<Read>> {
     let path = endpoint(id)?;
-    Some(vec![if id == "power-save" {
-        Read::post(
-            "settings",
-            path,
-            json!({"deviceInfoList":["power_saver_mode"]}),
-        )
-    } else {
-        Read::get("settings", path)
-    }])
+    Some(vec![Read::get("settings", path)])
 }
 pub fn page(id: &str, readings: &Data) -> Page {
     let mut p = Page::default();
@@ -63,7 +54,7 @@ pub fn page(id: &str, readings: &Data) -> Page {
             ));
             p.fields.push(Field::choice(
                 "wifi6_switch",
-                "Wi-Fi 6",
+                "Wi-Fi 7",
                 &d["wifi6_switch"],
                 ON,
             ));
@@ -83,22 +74,34 @@ pub fn page(id: &str, readings: &Data) -> Page {
                     "key" => Field::password(&key, label, d.is_object()),
                     "hidden" => Field::choice(&key, label, &d[&key], ON),
                     "txpower" => Field::number(&key, label, &d[&key], 1, 100),
-                    "htmode" => Field::choice(
-                        &key,
-                        label,
-                        &d[&key],
-                        if band == "2g" {
-                            &[("auto", "自动"), ("EHT20", "20 MHz"), ("EHT40", "40 MHz")]
+                    "htmode" => {
+                        let current = text(&d[&key]);
+                        let prefix = ["EHT", "HE", "VHT", "HT"]
+                            .into_iter()
+                            .find(|prefix| current.starts_with(prefix))
+                            .unwrap_or(if d["wifi6_switch"] == "0" {
+                                if band == "2g" { "HT" } else { "VHT" }
+                            } else {
+                                "EHT"
+                            });
+                        let widths = if band == "2g" {
+                            &[20, 40][..]
                         } else {
-                            &[
-                                ("auto", "自动"),
-                                ("EHT20", "20 MHz"),
-                                ("EHT40", "40 MHz"),
-                                ("EHT80", "80 MHz"),
-                                ("EHT160", "160 MHz"),
-                            ]
-                        },
-                    ),
+                            &[20, 40, 80, 160][..]
+                        };
+                        let mut choices =
+                            vec![("auto".to_string(), crate::i18n::tr("自动").to_string())];
+                        choices.extend(
+                            widths
+                                .iter()
+                                .map(|width| (format!("{prefix}{width}"), format!("{width} MHz"))),
+                        );
+                        let choices: Vec<_> = choices
+                            .iter()
+                            .map(|(key, label)| (key.as_str(), label.as_str()))
+                            .collect();
+                        Field::choice(&key, label, &d[&key], &choices)
+                    }
                     "channel" => {
                         let channels = if band == "2g" {
                             vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -222,12 +225,6 @@ pub fn page(id: &str, readings: &Data) -> Page {
             p.note =
                 crate::i18n::tr("直供电会停止电池充电，并覆盖自动充电策略；关闭后恢复充电上限管理。充电回差用于避免频繁启停。").into();
         }
-        "power-save" => p.fields.push(Field::choice(
-            "power_saver_mode",
-            crate::i18n::tr("省电模式"),
-            &d["power_saver_mode"],
-            ON,
-        )),
         "fast-boot" => p.fields.push(Field::choice(
             "fast_boot",
             crate::i18n::tr("快速启动"),
@@ -320,6 +317,20 @@ pub fn page(id: &str, readings: &Data) -> Page {
                     &d["accept_routes"],
                 ),
             ];
+            if d["gateway_mode"] == true {
+                p.fields.push(Field::boolean(
+                    "accept_dns",
+                    crate::i18n::tr("接收 Tailscale DNS"),
+                    &d["accept_dns"],
+                ));
+                let mut exit = Field::text(
+                    "exit_node",
+                    crate::i18n::tr("退出节点 IP（留空关闭）"),
+                    &d["exit_node"],
+                );
+                exit.max = 45;
+                p.fields.push(exit);
+            }
             let mut routes = Field::text(
                 "advertise_routes",
                 crate::i18n::tr("此设备发布的子网"),
@@ -332,7 +343,7 @@ pub fn page(id: &str, readings: &Data) -> Page {
             routes.multiline = true;
             p.fields.push(routes);
             p.note = crate::i18n::tr(
-                "发布的路由仍需在 Tailscale 管理端批准。接收远端子网路由在内核网关模式下生效。",
+                "发布的路由需在 Tailscale 管理端批准。DNS 与退出节点作用于路由器，热点转发范围保持原配置。",
             )
             .into();
         }
@@ -357,7 +368,7 @@ pub fn plan(id: &str, action: &str, p: &Page, readings: &Data) -> Result<Plan> {
     let d = data(readings, "settings");
     ensure!(d.is_object(), "{}", crate::i18n::tr("请先读取设备设置。"));
     let keys = p.fields.iter().map(|f| f.key.as_str()).collect::<Vec<_>>();
-    let mut body = p.changed(&keys)?;
+    let body = p.changed(&keys)?;
     ensure!(
         body.as_object().is_some_and(|o| !o.is_empty()),
         "{}",
@@ -382,8 +393,7 @@ pub fn plan(id: &str, action: &str, p: &Page, readings: &Data) -> Result<Plan> {
             for k in [&ssid, &key] {
                 if let Some(v) = body.get(k).and_then(Value::as_str) {
                     ensure!(
-                        !v.contains(['\'', '"', ';', '$', '`', '\\', '|', '<', '>', '&'])
-                            && !v.chars().any(char::is_control),
+                        !v.chars().any(char::is_control),
                         "{}",
                         crate::i18n::tr("设备无法保存输入中的特殊字符，请修改网络名称或密码。")
                     );
@@ -414,12 +424,14 @@ pub fn plan(id: &str, action: &str, p: &Page, readings: &Data) -> Result<Plan> {
             );
             if id == "wifi5" && (p.field("channel_5g")?.dirty() || p.field("htmode_5g")?.dirty()) {
                 let ch = p.field("channel_5g")?.value.parse::<u32>().unwrap_or(0);
-                let width = &p.field("htmode_5g")?.value;
+                let width = p
+                    .field("htmode_5g")?
+                    .value
+                    .trim_start_matches(|c: char| c.is_ascii_alphabetic());
                 ensure!(
-                    !(ch == 165 && !["auto", "EHT20"].contains(&width.as_str())
-                        || ch >= 149 && width == "EHT160"
-                        || (132..149).contains(&ch)
-                            && ["EHT80", "EHT160"].contains(&width.as_str())),
+                    !(ch == 165 && !["", "20"].contains(&width)
+                        || ch >= 149 && width == "160"
+                        || (132..149).contains(&ch) && ["80", "160"].contains(&width)),
                     "{}",
                     crate::i18n::tr("所选信道不支持该带宽。")
                 );
@@ -429,10 +441,6 @@ pub fn plan(id: &str, action: &str, p: &Page, readings: &Data) -> Result<Plan> {
             } else {
                 "/api/wifi/settings"
             }
-        }
-        "power-save" => {
-            body = json!({"deviceInfoList":p.all(&["power_saver_mode"])?});
-            "/api/device/power-save"
         }
         "tailscale-config" => {
             if let Some(routes) = body["advertise_routes"].as_array() {
@@ -505,7 +513,22 @@ mod tests {
             .iter_mut()
             .find(|f| f.key == "ssid_2g")
             .unwrap()
-            .value = "unsafe$value".into();
+            .value = "Guest's $ Wi-Fi".into();
+        assert_eq!(
+            plan("wifi2", "save", &p, &readings).unwrap().requests[0].body,
+            Some(json!({"ssid_2g":"Guest's $ Wi-Fi"}))
+        );
+        p.fields
+            .iter_mut()
+            .find(|f| f.key == "key_2g")
+            .unwrap()
+            .value = "Test'$\\&-only".into();
+        assert!(plan("wifi2", "save", &p, &readings).is_ok());
+        p.fields
+            .iter_mut()
+            .find(|f| f.key == "ssid_2g")
+            .unwrap()
+            .value = "line\nbreak".into();
         assert!(plan("wifi2", "save", &p, &readings).is_err());
     }
 }

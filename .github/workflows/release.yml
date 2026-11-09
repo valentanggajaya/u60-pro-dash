@@ -24,6 +24,25 @@ jobs:
         with:
           targets: aarch64-unknown-linux-musl
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: u60-web/package-lock.json
+
+      - name: Build embedded browser application
+        working-directory: u60-web
+        run: |
+          npm ci
+          npm test
+          npm run build
+
+      - name: Verify production browser bundle
+        working-directory: u60-web
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:browser
+
       - name: Install musl cross-compiler
         run: |
           sudo apt-get update

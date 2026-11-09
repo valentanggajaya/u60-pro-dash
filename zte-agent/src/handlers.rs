@@ -12,6 +12,7 @@ use crate::system::{self, CpuTracker, ProcessTracker, SpeedTracker};
 use crate::ubus;
 
 pub struct AppState {
+    pub performance: crate::operating::Performance,
     pub client_details: crate::client_details::ClientMonitor,
     pub dashboard: Arc<crate::dashboard::Dashboard>,
     pub live_activity: Arc<crate::live_activity::LiveActivity>,
@@ -56,6 +57,7 @@ impl AppState {
         let dashboard = Arc::new(crate::dashboard::Dashboard::default());
         let ota = crate::ota::OtaManager::system(Arc::downgrade(&dashboard));
         Self {
+            performance: crate::operating::Performance::default(),
             client_details: crate::client_details::ClientMonitor::default(),
             dashboard,
             tls: Arc::new(crate::tls::Tls::router(Arc::clone(&live_activity))),
@@ -191,30 +193,83 @@ pub fn network_speed(state: &AppState) -> (u16, Value) {
 /// toggles, so any cache would pin stale state. Falls back to `uci get` on
 /// any miss so the result is always what the CLI would have printed.
 pub fn modem_status(_state: &AppState) -> (u16, Value) {
-    let read = |path: &str| std::fs::read_to_string(path).ok();
-    let from_files = read(UCI_NWINFO_CONFIG).and_then(|config| {
-        uci_operate_mode(&config, read(UCI_NWINFO_DELTA).as_deref().unwrap_or(""))
-    });
-    let mode = match from_files {
-        Some(mode) => Ok(mode),
-        None => ubus::uci_get(UCI_OPERATE_MODE_KEY),
-    };
+    let mode = read_uci_option("zte_nwinfo", "sys_info", "operate_mode");
     match mode {
         Ok(mode) => (200, json!({"ok": true, "data": {"operate_mode": mode}})),
         Err(e) => (503, json!({"ok": false, "error": e})),
     }
 }
 
-const UCI_NWINFO_CONFIG: &str = "/etc/config/zte_nwinfo";
-const UCI_NWINFO_DELTA: &str = "/tmp/.uci/zte_nwinfo";
-const UCI_OPERATE_MODE_KEY: &str = "zte_nwinfo.sys_info.operate_mode";
+/// Read a public scalar from committed UCI plus its uncommitted delta.
+/// Callers supply fixed keys, never values or paths from an HTTP request.
+pub(crate) fn read_uci_option(config: &str, section: &str, option: &str) -> Result<String, String> {
+    let value = read_uci_files(
+        std::path::Path::new(&format!("/etc/config/{config}")),
+        std::path::Path::new(&format!("/tmp/.uci/{config}")),
+        std::path::Path::new(&format!("/tmp/lock/{config}.ucilock")),
+        config, section, option,
+    );
+    value.map(Ok).unwrap_or_else(|| ubus::uci_get(&format!("{config}.{section}.{option}")))
+}
+
+/// B31's libuci holds /tmp/lock/<package>.ucilock across load/commit, rather
+/// than relying on a lock on the config inode it is about to replace. Hold
+/// that lock first, then config → delta. Reading a truncated delta before
+/// the replacement otherwise resurrects the old state. Missing firmware
+/// locks and contention use the original CLI rather than assuming a format.
+fn read_uci_files(base_path: &std::path::Path, delta_path: &std::path::Path, package_lock_path: &std::path::Path, config: &str, section: &str, option: &str) -> Option<String> {
+    use std::fs::File;
+    use std::io::Read;
+    use std::os::fd::AsRawFd;
+    use std::os::unix::fs::MetadataExt;
+
+    fn lock(file: &File) -> Option<()> {
+        (unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_SH | libc::LOCK_NB) } == 0).then_some(())
+    }
+    fn current(file: &File, path: &std::path::Path) -> Option<()> {
+        let open = file.metadata().ok()?;
+        let now = std::fs::metadata(path).ok()?;
+        (open.dev() == now.dev() && open.ino() == now.ino()).then_some(())
+    }
+    let package_lock = File::open(package_lock_path).ok()?;
+    lock(&package_lock)?;
+    current(&package_lock, package_lock_path)?;
+    let mut base = File::open(base_path).ok()?;
+    lock(&base)?;
+    current(&base, base_path)?;
+    let mut base_text = String::new();
+    base.read_to_string(&mut base_text).ok()?;
+    let mut delta_text = String::new();
+    let delta = match File::open(delta_path) {
+        Ok(mut file) => {
+            lock(&file)?;
+            file.read_to_string(&mut delta_text).ok()?;
+            current(&file, delta_path)?;
+            Some(file)
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(_) => return None,
+    };
+    current(&base, base_path)?;
+    let value = uci_option(&base_text, &delta_text, config, section, option);
+    // Closing the files releases the locks, including every early return.
+    drop(delta);
+    value
+}
 
 /// Resolve `zte_nwinfo.sys_info.operate_mode` from the committed config text
 /// and the delta (`uci set` without `commit`) text. `None` means "not sure":
 /// the option is absent, deleted, or the delta does something this reader
 /// does not model (section add/rename), and the caller must ask `uci get`.
+#[cfg(test)]
 fn uci_operate_mode(config: &str, delta: &str) -> Option<String> {
-    let mut value = uci_config_option(config, "sys_info", "operate_mode");
+    uci_option(config, delta, "zte_nwinfo", "sys_info", "operate_mode")
+}
+fn uci_option(config: &str, delta: &str, name: &str, section: &str, option: &str) -> Option<String> {
+    let key = format!("{name}.{section}.{option}");
+    let delete_option = format!("-{key}");
+    let delete_section = format!("-{name}.{section}");
+    let mut value = uci_config_option(config, section, option);
     for line in delta.lines().map(str::trim).filter(|l| !l.is_empty()) {
         let (lhs, rhs) = match line.split_once('=') {
             Some((lhs, rhs)) => (lhs, Some(rhs)),
@@ -222,7 +277,7 @@ fn uci_operate_mode(config: &str, delta: &str) -> Option<String> {
         };
         match lhs {
             // `uci set` of the key: last write wins.
-            "zte_nwinfo.sys_info.operate_mode" => {
+            _ if lhs == key => {
                 let raw = rhs?.trim();
                 if uci_value_torn(raw) {
                     return None;
@@ -230,9 +285,9 @@ fn uci_operate_mode(config: &str, delta: &str) -> Option<String> {
                 value = Some(uci_unquote(raw));
             }
             // Deleting the option or the whole section removes it.
-            "-zte_nwinfo.sys_info.operate_mode" | "-zte_nwinfo.sys_info" => value = None,
+            _ if lhs == delete_option || lhs == delete_section => value = None,
             // Section creation/rename or list ops touching sys_info: bail.
-            _ if lhs.starts_with(['+', '@', '|', '~']) && line.contains("sys_info") => return None,
+            _ if lhs.starts_with(['+', '@', '|', '~']) && line.contains(section) => return None,
             _ => {}
         }
     }
@@ -349,6 +404,45 @@ config other 'other'
     #[test]
     fn reads_committed_value_when_no_delta() {
         assert_eq!(uci_operate_mode(CONFIG, "").as_deref(), Some("ONLINE"));
+    }
+
+    #[test]
+    fn concurrent_uci_commit_cannot_resurrect_old_radio_state() {
+        use std::fs::{self, OpenOptions};
+        use std::os::fd::AsRawFd;
+        let dir = std::env::temp_dir().join(format!("u60-uci-lock-{}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        let base = dir.join("config");
+        let delta = dir.join("delta");
+        let package_lock = dir.join("package.ucilock");
+        fs::write(&package_lock, "").unwrap();
+        fs::write(&base, CONFIG).unwrap();
+        fs::write(&delta, "zte_nwinfo.sys_info.operate_mode='OFFLINE'\n").unwrap();
+        let read = || read_uci_files(&base, &delta, &package_lock, "zte_nwinfo", "sys_info", "operate_mode");
+        assert_eq!(read().as_deref(), Some("OFFLINE"));
+
+        // The shipped library locks a separate package file while the base
+        // inode remains readable. A base-file flock alone cannot prevent it.
+        let writer = OpenOptions::new().read(true).write(true).open(&package_lock).unwrap();
+        assert_eq!(unsafe { libc::flock(writer.as_raw_fd(), libc::LOCK_EX) }, 0);
+        fs::write(&delta, "").unwrap(); // libuci flushes the delta before rename.
+        assert_eq!(read(), None); // Must defer to libuci, never report old ONLINE.
+        fs::write(&base, CONFIG.replace("ONLINE", "OFFLINE")).unwrap();
+        drop(writer);
+        assert_eq!(read().as_deref(), Some("OFFLINE"));
+
+        let writer = OpenOptions::new().read(true).write(true).open(&base).unwrap();
+        assert_eq!(unsafe { libc::flock(writer.as_raw_fd(), libc::LOCK_EX) }, 0);
+        assert_eq!(read(), None);
+        drop(writer);
+
+        let writer = OpenOptions::new().read(true).write(true).open(&delta).unwrap();
+        assert_eq!(unsafe { libc::flock(writer.as_raw_fd(), libc::LOCK_EX) }, 0);
+        assert_eq!(read(), None); // Also respect a concurrent uci set.
+        drop(writer);
+        fs::remove_file(&package_lock).unwrap();
+        assert_eq!(read(), None); // Unknown firmware must use its own reader.
+        fs::remove_dir_all(dir).unwrap();
     }
 
     #[test]

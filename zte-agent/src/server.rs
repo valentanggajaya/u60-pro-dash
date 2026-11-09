@@ -88,6 +88,8 @@ pub enum Pre {
     Reply(u16, Value),
     /// `POST /api/auth/login`: read at most `LOGIN_BODY_MAX`, needs the peer address.
     Login,
+    /// Revoke only the authenticated bearer session and its streams.
+    Logout { owner: SessionId },
     LanDownload { size: usize },
     LanUpload,
     /// Authenticated JPEG/PNG upload for the bounded eSIM QR decoder.
@@ -132,6 +134,12 @@ pub fn precheck(req: &ReqInfo, env: &PreEnv) -> Pre {
     }
     match (req.method, req.path) {
         (Method::Post, "/api/auth/login") => return Pre::Login,
+        (Method::Post, "/api/auth/logout") => {
+            return match principal {
+                Some(p) => Pre::Logout { owner: p.id },
+                None => refuse(401, "unauthorized"),
+            };
+        }
         // Answered here, without a hand-off, so the RTT measurement stays honest.
         (Method::Get, "/api/lan/ping") => {
             let (status, body) = lan_test::ping();
@@ -221,6 +229,8 @@ pub fn lane(method: Method, path: &str) -> Lane {
         | (Get, "/api/stk/menu" | "/api/stk/session") => false,
         (_, p) if p.starts_with("/api/proxy/") || p.starts_with("/api/esim/") || p.starts_with("/api/tailscale/") || p.starts_with("/api/https/") => true,
         (Put | Post, p) if p.starts_with("/api/vpn/wireguard") => true,
+        (Put, "/api/modem/bandwidth") => true,
+        (Put, "/api/wifi/settings" | "/api/wifi/guest") => true,
         (_, p) if p.starts_with("/api/ussd/") || p.starts_with("/api/stk/") => true,
         (Post, p) if p.starts_with("/api/sim/") || p.starts_with("/api/cell/") => true,
         (_, p) if p.starts_with("/api/dns/") => true,
@@ -302,6 +312,7 @@ fn route_inner(method: &Method, path: &str, state: &AppState, body: &[u8]) -> (u
         (&Method::Get, "/api/network/rmnet") => network_ext::network_rmnet(state),
         // Device (ubus)
         (&Method::Get, "/api/device/battery-info") => network_ext::network_battery_ubus(state),
+        (&Method::Get, "/api/device/battery-details") => (200, crate::battery_details::snapshot(state)),
         (&Method::Get, "/api/device/thermal") => device_ext::device_thermal(state),
         (&Method::Get, "/api/device/charger") => device_ext::device_charger(state),
         (&Method::Get, "/api/device/system") => device_ext::device_system(state),
@@ -319,6 +330,7 @@ fn route_inner(method: &Method, path: &str, state: &AppState, body: &[u8]) -> (u
         (&Method::Get, "/api/system/top") => handlers::system_top(state),
         (&Method::Post, "/api/system/kill-bloat") => handlers::system_kill_bloat(state, body),
         // WiFi
+        (&Method::Get, "/api/wifi/radios") => wifi::wifi_radios(state),
         (&Method::Get, "/api/wifi/status") => wifi::wifi_status(state),
         (&Method::Put, "/api/wifi/settings") => wifi::wifi_set(state, body),
         (&Method::Get, "/api/wifi/guest") => wifi::guest_status(state),
@@ -331,6 +343,9 @@ fn route_inner(method: &Method, path: &str, state: &AppState, body: &[u8]) -> (u
         (&Method::Post, "/api/modem/online") => modem_ext::modem_online_user(state),
         (&Method::Get, "/api/modem/data") => modem_ext::modem_data_get(state),
         (&Method::Put, "/api/modem/data") => modem_ext::modem_data_set(state, body),
+        (&Method::Get, "/api/device/operating") => crate::operating::status(state),
+        (&Method::Put, "/api/device/performance") => crate::operating::set_performance(state, body),
+        (&Method::Put, "/api/modem/bandwidth") => crate::operating::set_bandwidth(state, body),
         (&Method::Post, "/api/modem/airplane") => modem_ext::modem_airplane(state, body),
         (&Method::Put, "/api/modem/network-mode") => modem_ext::modem_network_mode_set(state, body),
         (&Method::Post, "/api/modem/scan") => modem_ext::modem_scan(state),
@@ -486,7 +501,13 @@ fn route_inner(method: &Method, path: &str, state: &AppState, body: &[u8]) -> (u
             "/api/proxy/enable" | "/api/proxy/disable" | "/api/proxy/restart" |
             "/api/proxy/config" | "/api/proxy/subscription" | "/api/proxy/validate" | "/api/proxy/reload" | "/api/proxy/install" | "/api/proxy/select"
         ) => proxy::change(state, path.rsplit('/').next().unwrap(), body),
+        (&Method::Get, "/api/screen/preferences") => crate::screen::get(),
+        (&Method::Put, "/api/screen/preferences") => crate::screen::put(body),
         (&Method::Get, "/api/tailscale/status") => tailscale::status(state),
+        (&Method::Get, "/api/tailscale/network") => tailscale::diagnostics::network(state),
+        (&Method::Get, "/api/tailscale/peers") => tailscale::diagnostics::peers(state),
+        (&Method::Get, "/api/tailscale/logs") => tailscale::diagnostics::logs(state),
+        (&Method::Post, "/api/tailscale/probe") => tailscale::diagnostics::probe(state, body),
         // LAN HTTPS (docs/web-ui.md, "LAN HTTPS"): read-only for the apps.
         (&Method::Get, "/api/https") => state.tls.status_json(),
         (&Method::Post, path @ ("/api/https/on" | "/api/https/renew" | "/api/https/reset")) => https_change(state, path, body),
@@ -814,5 +835,12 @@ mod tests {
     fn ota_download_uses_the_slow_lane_without_blocking_status() {
         assert_eq!(lane(Method::Post, "/api/update/download"), Lane::Slow);
         assert_eq!(lane(Method::Get, "/api/update/status"), Lane::General);
+    }
+
+    #[test]
+    fn mode_writes_leave_live_status_in_the_general_lane() {
+        assert_eq!(lane(Method::Post, "/api/modem/airplane"), Lane::Slow);
+        assert_eq!(lane(Method::Put, "/api/modem/bandwidth"), Lane::Slow);
+        assert_eq!(lane(Method::Get, "/api/device/operating"), Lane::General);
     }
 }
