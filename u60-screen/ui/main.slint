@@ -621,6 +621,7 @@ export component Screen inherits Window {
             hold-tick => { root.hold-tick(); }
             hold-end(inside) => { root.hold-end(inside); }
             hold-cancel => { root.hold-cancel(); }
+            sleep-now => { root.power(); }
         }
         if root.pin-visible: PinPad {
             width: parent.width; height: parent.height;

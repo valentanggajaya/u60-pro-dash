@@ -36,6 +36,9 @@ export component LockScreen inherits AmbientBackground {
     callback hold-tick;
     callback hold-end(bool);
     callback hold-cancel;
+    // Double-tapping the clock or date turns the screen off (same as a short
+    // power-key press), so the physical key is not needed every time.
+    callback sleep-now;
     background: Palette.bg;
     TouchArea { }
     StatusBar {
@@ -54,6 +57,13 @@ export component LockScreen inherits AmbientBackground {
     Label {
         x: 24px; y: 107px; width: parent.width - 48px; height: 23px;
         text: root.date; font-size: 12px; color: Palette.muted; horizontal-alignment: center; vertical-alignment: center;
+    }
+    // Finger target over the clock and date (y 40-130). A single tap does
+    // nothing; only a double tap sleeps, and only while the screen is awake.
+    TouchArea {
+        x: 24px; y: 40px; width: parent.width - 48px; height: 90px;
+        enabled: root.awake;
+        double-clicked => { root.sleep-now(); }
     }
     ModeSummary {
         x: 24px; y: 137px; width: parent.width - 48px; height: 26px;
