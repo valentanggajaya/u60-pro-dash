@@ -47,6 +47,9 @@ msgstr "訊號詳情"
 msgid "修改解锁密码"
 msgstr "修改解鎖密碼"
 
+msgid "关机"
+msgstr "關機"
+
 msgid "关闭密码解锁"
 msgstr "關閉密碼解鎖"
 
@@ -310,6 +313,9 @@ msgstr "退格"
 
 msgid "选择即应用"
 msgstr "選擇即套用"
+
+msgid "重启设备"
+msgstr "重啟裝置"
 
 msgid "重新连接"
 msgstr "重新連線"

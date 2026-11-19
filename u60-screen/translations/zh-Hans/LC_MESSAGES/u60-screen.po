@@ -47,6 +47,9 @@ msgstr "信号详情"
 msgid "修改解锁密码"
 msgstr "修改解锁密码"
 
+msgid "关机"
+msgstr "关机"
+
 msgid "关闭密码解锁"
 msgstr "关闭密码解锁"
 
@@ -310,6 +313,9 @@ msgstr "退格"
 
 msgid "选择即应用"
 msgstr "选择即应用"
+
+msgid "重启设备"
+msgstr "重启设备"
 
 msgid "重新连接"
 msgstr "重新连接"

@@ -9,6 +9,9 @@ export component StatusBar inherits Rectangle {
     in property <bool> rail;
     in property <bool> interactive;
     callback clicked;
+    // Double tap anywhere on the bar: the owner turns the screen off.
+    in property <bool> double-tap-enabled;
+    callback double-tapped;
     in property <bool> awake: true;
     in property <bool> locked;
     in property <string> connection;
@@ -123,5 +126,31 @@ export component StatusBar inherits Rectangle {
             color: Palette.muted; vertical-alignment: center; horizontal-alignment: right;
         }
     }
-    TouchArea { enabled: root.interactive && !root.locked; accessible-role: button; accessible-label: @tr("快捷控制"); clicked => { root.clicked(); } }
+    // With double tap enabled, a first tap waits briefly: a second tap inside
+    // the window is a double tap (lock + screen off) and the single-tap action
+    // never runs; otherwise the single tap runs when the window closes. Counting
+    // taps here keeps the two gestures exclusive whatever order the toolkit
+    // reports clicks in. Without double tap, a tap acts at once as before.
+    tap-window := Timer {
+        interval: 400ms;
+        running: false;
+        triggered => {
+            self.running = false;
+            if root.interactive && !root.locked { root.clicked(); }
+        }
+    }
+    TouchArea {
+        enabled: (root.interactive && !root.locked) || root.double-tap-enabled;
+        accessible-role: button; accessible-label: @tr("快捷控制");
+        clicked => {
+            if tap-window.running {
+                tap-window.running = false;
+                root.double-tapped();
+            } else if root.double-tap-enabled {
+                tap-window.running = true;
+            } else {
+                root.clicked();
+            }
+        }
+    }
 }

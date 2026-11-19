@@ -50,7 +50,14 @@ impl Calibration {
 struct PowerKey {
     device: RawDevice,
     pressed: Option<Instant>,
+    /// The long-press menu was already requested for the current press.
+    menu: bool,
 }
+
+/// Holding the power key this long opens the power menu (shut down / restart).
+/// The firmware takes no action of its own on a long press while the vendor
+/// UI is stopped (it only logs "power key press."), so this cannot race it.
+const LONG_PRESS: Duration = Duration::from_millis(1000);
 pub struct Inputs {
     touch: RawDevice,
     power: Vec<PowerKey>,
@@ -67,6 +74,7 @@ pub enum Input {
     Pointer(WindowEvent),
     CancelPointer,
     Power,
+    PowerMenu,
 }
 fn open(path: &Path) -> Result<RawDevice> {
     let file = OpenOptions::new()
@@ -104,6 +112,7 @@ impl Inputs {
                 power.push(PowerKey {
                     device,
                     pressed: None,
+                    menu: false,
                 });
             }
         }
@@ -274,22 +283,45 @@ impl Inputs {
                 match event.destructure() {
                     EventSummary::Key(_, Key::KEY_POWER, 1) => {
                         power.pressed = Some(Instant::now());
+                        power.menu = false;
                     }
                     EventSummary::Key(_, Key::KEY_POWER, 0) => {
+                        // A release after the menu opened only ends that press.
                         if power
                             .pressed
                             .take()
                             .is_some_and(|time| time.elapsed() < Duration::from_millis(900))
+                            && !power.menu
                         {
                             output.push(Input::Power);
                         }
+                        power.menu = false;
                     }
-                    EventSummary::Synchronization(_, Syn::SYN_DROPPED, _) => power.pressed = None,
+                    EventSummary::Synchronization(_, Syn::SYN_DROPPED, _) => {
+                        power.pressed = None;
+                        power.menu = false;
+                    }
                     _ => {}
                 }
             }
+            // Still held: open the menu once, while the key is down (no release needed).
+            if !power.menu && power.pressed.is_some_and(|time| time.elapsed() >= LONG_PRESS) {
+                power.menu = true;
+                output.push(Input::PowerMenu);
+            }
         }
         Ok(output)
+    }
+
+    /// Time left until a held power key reaches the long press, so the event
+    /// loop wakes up for it instead of waiting for the next input.
+    pub fn power_deadline(&self) -> Option<Duration> {
+        self.power
+            .iter()
+            .filter(|p| !p.menu)
+            .filter_map(|p| p.pressed)
+            .map(|time| LONG_PRESS.saturating_sub(time.elapsed()))
+            .min()
     }
 
     fn report(&mut self, output: &mut Vec<Input>) {

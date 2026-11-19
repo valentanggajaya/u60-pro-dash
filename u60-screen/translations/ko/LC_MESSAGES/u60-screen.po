@@ -47,6 +47,9 @@ msgstr "신호 상세"
 msgid "修改解锁密码"
 msgstr "잠금 해제 PIN 변경"
 
+msgid "关机"
+msgstr "전원 끄기"
+
 msgid "关闭密码解锁"
 msgstr "PIN 잠금 해제"
 
@@ -310,6 +313,9 @@ msgstr "삭제"
 
 msgid "选择即应用"
 msgstr "선택하면 바로 적용"
+
+msgid "重启设备"
+msgstr "장치 다시 시작"
 
 msgid "重新连接"
 msgstr "다시 연결"

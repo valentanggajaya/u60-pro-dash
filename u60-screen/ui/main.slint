@@ -192,6 +192,12 @@ export component Screen inherits Window {
     callback set-brightness(int);
     callback cycle-sleep;
     callback power;
+    // Long-press power menu (shut down / restart), shown over every surface.
+    in-out property <bool> power-menu-visible;
+    callback power-menu;
+    callback power-menu-cancel;
+    callback power-shutdown;
+    callback power-restart;
     callback activity;
     callback scenario;
     callback exit;
@@ -239,6 +245,10 @@ export component Screen inherits Window {
             thermal: root.thermal-limited; rail: root.rail-active;
             interactive: !root.locked && !root.asleep;
             clicked => { root.open("quick-controls"); }
+            // Double tap the status bar to lock and turn the screen off, like a
+            // short power-key press, without wearing the physical key.
+            double-tap-enabled: !root.locked && !root.asleep;
+            double-tapped => { root.power(); }
         }
         Rectangle {
             y: 28px; width: parent.width; height: 40px;
@@ -631,6 +641,22 @@ export component Screen inherits Window {
             backspace => { root.pin-backspace(); }
             submit => { root.pin-submit(); }
             cancel => { root.pin-cancel(); }
+        }
+        // Long-press power menu, like the vendor UI's: available locked or not.
+        // Tapping outside the panel cancels it.
+        if root.power-menu-visible && !root.asleep: Rectangle {
+            width: parent.width; height: parent.height; background: #000000b0;
+            TouchArea { clicked => { root.power-menu-cancel(); } }
+            GlassPanel {
+                x: 24px; y: (parent.height - self.height) / 2; width: 272px;
+                height: power-layout.preferred-height; border-radius: 18px;
+                power-layout := VerticalLayout {
+                    padding: 18px; spacing: 12px;
+                    TapButton { height: 52px; text: @tr("关机"); selected: true; clicked => { root.power-shutdown(); } }
+                    TapButton { height: 52px; text: @tr("重启设备"); clicked => { root.power-restart(); } }
+                    TapButton { height: 44px; text: @tr("取消"); clicked => { root.power-menu-cancel(); } }
+                }
+            }
         }
         if root.asleep: Rectangle {
             width: parent.width; height: parent.height; background: #000000;

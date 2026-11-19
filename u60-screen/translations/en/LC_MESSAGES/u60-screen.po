@@ -47,6 +47,9 @@ msgstr "Radio details"
 msgid "修改解锁密码"
 msgstr "Change unlock PIN"
 
+msgid "关机"
+msgstr "Shut down"
+
 msgid "关闭密码解锁"
 msgstr "Disable PIN lock"
 
@@ -310,6 +313,9 @@ msgstr "Backspace"
 
 msgid "选择即应用"
 msgstr "Settings apply automatically."
+
+msgid "重启设备"
+msgstr "Restart device"
 
 msgid "重新连接"
 msgstr "Reconnect"

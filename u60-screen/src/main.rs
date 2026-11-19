@@ -10,6 +10,7 @@ mod home;
 mod i18n;
 mod material;
 mod platform;
+mod power;
 mod security;
 mod ui_model;
 mod wifi_home;

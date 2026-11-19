@@ -2694,6 +2694,13 @@
     "ko": "전체 코너",
     "zh-Hant": "全錐型"
   },
+  "关机": {
+    "en": "Shut down",
+    "zh-Hans": "关机",
+    "zh-Hant": "關機",
+    "ja": "電源を切る",
+    "ko": "전원 끄기"
+  },
   "关键词（逗号分隔）": {
     "en": "Keywords, comma-separated",
     "zh-Hans": "关键词（逗号分隔）",

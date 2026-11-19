@@ -1688,12 +1688,54 @@ impl App {
             s.persist(&u);
         });
         bind!(on_power, |s, u| {
+            u.set_power_menu_visible(false);
             if !u.get_asleep() {
                 s.security.lock();
                 s.features.suspend();
             }
             u.set_asleep(!u.get_asleep());
         });
+        // Long-press power menu. Not routed through `bind!`: like the vendor
+        // UI's menu it must work while locked and over any open dialog.
+        {
+            let weak = ui.as_weak();
+            let state = state.clone();
+            ui.on_power_menu(move || {
+                if let Some(u) = weak.upgrade() {
+                    state.borrow_mut().last_input = Instant::now();
+                    u.set_asleep(false);
+                    u.set_power_menu_visible(true);
+                }
+            });
+        }
+        {
+            let weak = ui.as_weak();
+            ui.on_power_menu_cancel(move || {
+                if let Some(u) = weak.upgrade() {
+                    u.set_power_menu_visible(false);
+                }
+            });
+        }
+        // Shut down / restart: lock, stop live reads and turn the backlight off
+        // at once, then hand the request to the firmware (see `power.rs`).
+        let power_action = |action: crate::power::Action| {
+            let weak = ui.as_weak();
+            let state = state.clone();
+            move || {
+                if let Some(u) = weak.upgrade() {
+                    u.set_power_menu_visible(false);
+                    let mut s = state.borrow_mut();
+                    s.security.lock();
+                    s.features.suspend();
+                    u.set_asleep(true);
+                    s.sync_security(&u);
+                    drop(s);
+                    crate::power::request(action);
+                }
+            }
+        };
+        ui.on_power_shutdown(power_action(crate::power::Action::Shutdown));
+        ui.on_power_restart(power_action(crate::power::Action::Restart));
         bind!(on_hold_start, |s, _u| {
             s.security.hold_start();
         });

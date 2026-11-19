@@ -93,6 +93,8 @@ pub fn run(
             } else {
                 deadline.min(Duration::from_millis(500))
             };
+            // Wake up exactly when a held power key turns into a long press.
+            let timeout = inputs.power_deadline().map_or(timeout, |left| timeout.min(left));
             inputs.wait(timeout)?;
         }
         first = false;
@@ -101,6 +103,10 @@ pub fn run(
             match event {
                 input::Input::Power => {
                     app.ui.invoke_power();
+                }
+                input::Input::PowerMenu => {
+                    // Like the vendor UI: hold power for shut down / restart.
+                    app.ui.invoke_power_menu();
                 }
                 input::Input::CancelPointer => {
                     window.dispatch_event(WindowEvent::PointerMoved {
