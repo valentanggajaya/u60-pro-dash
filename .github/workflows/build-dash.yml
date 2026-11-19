@@ -1,0 +1,48 @@
+name: Build U60 dash package
+
+# Builds zte-agent + u60-screen for the U60 Pro in the cloud, so the PC only
+# downloads the finished package (no local Rust or cross-compiler needed).
+on:
+  push:
+    branches: [feat/native-screen]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-musl
+
+      - name: Install ARM64 cross-compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu musl-tools
+
+      - name: Build zte-agent and u60-screen
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gcc
+          CC_aarch64_unknown_linux_musl: aarch64-linux-gnu-gcc
+          AR_aarch64_unknown_linux_musl: aarch64-linux-gnu-ar
+        run: python3 scripts/dash/deploy.py build --artifacts "$RUNNER_TEMP/u60-dash"
+
+      - name: Add trial script and checksums
+        run: |
+          mkdir -p "$RUNNER_TEMP/u60-dash/extras"
+          cp u60-screen/scripts/device-trial.sh "$RUNNER_TEMP/u60-dash/extras/"
+          cd "$RUNNER_TEMP/u60-dash" && ls -la && cat release.json
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: u60-dash-package
+          path: ${{ runner.temp }}/u60-dash
+          retention-days: 30
