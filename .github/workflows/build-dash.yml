@@ -1,0 +1,54 @@
+name: Build U60 dash package
+
+# Builds the web console, zte-agent and u60-screen for the U60 Pro in the cloud,
+# so the PC only downloads the finished package. Runs on every push to main,
+# or by hand from the Actions tab ("Run workflow").
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-musl
+
+      - name: Install ARM64 cross-compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu musl-tools
+
+      - name: Build web console, zte-agent and u60-screen
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gcc
+          CC_aarch64_unknown_linux_musl: aarch64-linux-gnu-gcc
+          AR_aarch64_unknown_linux_musl: aarch64-linux-gnu-ar
+        run: python3 scripts/dash/deploy.py build --artifacts "$RUNNER_TEMP/u60-dash"
+
+      - name: Add trial script and show manifest
+        run: |
+          mkdir -p "$RUNNER_TEMP/u60-dash/extras"
+          cp u60-screen/scripts/device-trial.sh "$RUNNER_TEMP/u60-dash/extras/"
+          cd "$RUNNER_TEMP/u60-dash" && ls -la && cat release.json
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: u60-dash-package-main
+          path: ${{ runner.temp }}/u60-dash
+          retention-days: 30
