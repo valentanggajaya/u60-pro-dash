@@ -20,35 +20,38 @@ msgstr "U60 · 原生螢幕預覽"
 msgid "Wi-Fi 可用"
 msgstr "Wi-Fi 可用"
 
+msgid "Wi-Fi 已关闭"
+msgstr "Wi-Fi 已關閉"
+
 msgid "Wi-Fi 连接卡片"
 msgstr "Wi-Fi 連線卡片"
 
 msgid "{0} 台设备"
 msgstr "{0} 臺裝置"
 
-msgid "↑ 上传 / Mbps"
-msgstr "↑ 上傳 / Mbps"
+msgid "↑ 上传"
+msgstr "↑ 上傳"
 
-msgid "↓ 下载 / Mbps"
-msgstr "↓ 下載 / Mbps"
+msgid "↓ 下载"
+msgstr "↓ 下載"
 
 msgid "−2 分钟"
 msgstr "−2 分鐘"
 
-msgid "一般"
-msgstr "一般"
+msgid "上滑解锁"
+msgstr "上滑解鎖"
 
 msgid "二维码"
 msgstr "QR 碼"
+
+msgid "今日流量"
+msgstr "今日流量"
 
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "優先回應與處理能力，溫度與功耗可能上升。"
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "保留 Wi-Fi、USB 與本機管理"
-
-msgid "信号"
-msgstr "訊號"
 
 msgid "信号一般"
 msgstr "訊號一般"
@@ -71,6 +74,9 @@ msgstr "關機"
 msgid "关闭密码解锁"
 msgstr "關閉密碼解鎖"
 
+msgid "内存"
+msgstr "記憶體"
+
 msgid "切换 Wi-Fi 频段"
 msgstr "切換 Wi-Fi 頻段"
 
@@ -88,6 +94,9 @@ msgstr "重新整理連線狀態"
 
 msgid "取消"
 msgstr "取消"
+
+msgid "台设备"
+msgstr "臺裝置"
 
 msgid "后台连接 · "
 msgstr "後臺連線 · "
@@ -191,6 +200,9 @@ msgstr "未開啟 · 僅長按解鎖"
 msgid "未联网"
 msgstr "未連線"
 
+msgid "本月流量"
+msgstr "本月流量"
+
 msgid "本次 "
 msgstr "本次 "
 
@@ -251,6 +263,9 @@ msgstr "狀態"
 msgid "状态未知"
 msgstr "狀態未知"
 
+msgid "电池"
+msgstr "電池"
+
 msgid "电池供电"
 msgstr "電池供電"
 
@@ -296,9 +311,6 @@ msgstr "自動熄屏"
 msgid "自定义颜色"
 msgstr "自定義顏色"
 
-msgid "良好"
-msgstr "良好"
-
 msgid "蜂窝恢复后继续使用所选带宽策略。"
 msgstr "行動網路恢復後繼續使用所選頻寬策略。"
 
@@ -316,12 +328,6 @@ msgstr "設定解鎖密碼"
 
 msgid "跟随系统"
 msgstr "跟隨系統"
-
-msgid "载波数"
-msgstr "載波數"
-
-msgid "较弱"
-msgstr "較弱"
 
 msgid "输入 "
 msgstr "輸入 "
@@ -349,9 +355,6 @@ msgstr "重啟裝置"
 
 msgid "重新连接"
 msgstr "重新連線"
-
-msgid "长按 1 秒解锁"
-msgstr "長按 1 秒解鎖"
 
 msgid "降低处理频率，吞吐能力可能下降。"
 msgstr "降低處理頻率，吞吐能力可能下降。"

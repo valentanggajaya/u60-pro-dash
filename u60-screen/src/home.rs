@@ -147,16 +147,9 @@ impl Summary {
                 "/api/tailscale/status",
                 prefs.show_services && prefs.show_tailscale,
             ),
-            (
-                "usage",
-                "/api/data-usage",
-                metrics.iter().any(|k| k.as_str() == "month"),
-            ),
-            (
-                "memory",
-                "/api/memory",
-                metrics.iter().any(|k| k.as_str() == "memory"),
-            ),
+            // Always read: the home cards and lock screen rings show them.
+            ("usage", "/api/data-usage", true),
+            ("memory", "/api/memory", true),
             (
                 "system",
                 "/api/device/system",
@@ -259,6 +252,39 @@ impl Summary {
             metrics,
             |r| r.id.clone(),
         ));
+        // Lock screen rings and home cards: memory, today / month data and,
+        // when a monthly limit is on, how much of it is used.
+        if demo {
+            ui.set_memory_percent(32);
+            ui.set_today_data("1.24 GB".into());
+            ui.set_month_data("62.8 GB".into());
+            ui.set_month_fraction(0.42);
+        } else {
+            let usage = self.value("usage");
+            let sum = |period: &str| {
+                number(&usage[period]["rx_bytes"])
+                    .zip(number(&usage[period]["tx_bytes"]))
+                    .map(|(rx, tx)| rx + tx)
+            };
+            let memory = self.value("memory");
+            let limit = &usage["limit"];
+            let cap = number(&limit["bytes"])
+                .filter(|b| *b > 0. && limit["available"] == true && limit["enabled"] == true);
+            ui.set_memory_percent(
+                number(&memory["used_kb"])
+                    .zip(number(&memory["total_kb"]))
+                    .filter(|(_, total)| *total > 0.)
+                    .map_or(-1, |(used, total)| (used / total * 100.).clamp(0., 100.).round() as i32),
+            );
+            let bytes = crate::agent::model::bytes;
+            ui.set_today_data(sum("day").map(bytes).unwrap_or("—".into()).into());
+            ui.set_month_data(sum("month").map(bytes).unwrap_or("—".into()).into());
+            ui.set_month_fraction(
+                sum("month")
+                    .zip(cap)
+                    .map_or(-1., |(used, cap)| (used / cap).clamp(0., 1.) as f32),
+            );
+        }
         let mut services = Vec::new();
         for (key, title, show, id) in [
             ("tailscale", "Tailscale", prefs.show_tailscale, "tailscale"),

@@ -2,16 +2,18 @@ export global Palette {
     in-out property <bool> dark: true;
     in-out property <color> accent: #2563eb;
     in-out property <color> accent-ink: #87aeff;
-    out property <color> bg: dark ? #202a37 : #f4f6fa;
-    out property <color> surface: dark ? #273445 : #ffffff;
+    out property <color> bg: dark ? #070b13 : #f4f6fa;
+    out property <color> surface: dark ? #172030 : #ffffff;
     out property <color> text: dark ? #eef0f4 : #1b2028;
     out property <color> muted: dark ? #b4bfce : #546477;
-    out property <color> line: dark ? #3b4757 : #dbe2ec;
-    out property <color> rim: dark ? #ffffff18 : #1b202814;
-    out property <color> sheen: dark ? #ffffff45 : #ffffff;
-    out property <color> glass: dark ? #273445f2 : #fffffff2;
+    out property <color> line: dark ? #283246 : #dbe2ec;
+    out property <color> rim: dark ? #ffffff24 : #1b202814;
+    out property <color> sheen: dark ? #ffffff38 : #ffffff;
+    out property <color> glass: dark ? #111926e0 : #fffffff2;
     in-out property <image> material-light;
     in-out property <image> material-dark;
+    // 320x480 night sky behind the dark theme (own artwork, assets/).
+    in-out property <image> wallpaper-dark;
     in-out property <color> accent-on: #ffffff;
     out property <color> good: dark ? #95d8a8 : #1f713e;
     out property <color> warning: dark ? #efbf78 : #925d12;
@@ -22,9 +24,14 @@ export global Palette {
 // The opaque base also prevents locked/credential screens exposing old content.
 export component AmbientBackground inherits Rectangle {
     background: Palette.bg;
-    Image {
+    clip: true;
+    if Palette.dark: Image {
+        x: 0px; y: 0px; width: 320px; height: 480px;
+        source: Palette.wallpaper-dark;
+    }
+    if !Palette.dark: Image {
         x: 0px; y: 0px; width: 320px; height: 180px;
-        source: Palette.dark ? Palette.material-dark : Palette.material-light;
+        source: Palette.material-light;
     }
 }
 

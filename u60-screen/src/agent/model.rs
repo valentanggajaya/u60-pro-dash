@@ -122,6 +122,10 @@ pub struct Dashboard {
     pub bands: String,
     /// Number of component carriers in use, "—" when unknown.
     pub carriers: String,
+    /// The serving cell's band ("n41"), empty when unknown.
+    pub primary_band: String,
+    /// Sum of the known carrier bandwidths ("120 MHz"), empty when unknown.
+    pub bandwidth: String,
     pub online: bool,
     pub download: String,
     pub upload: String,
@@ -163,11 +167,17 @@ fn band_number(raw: &str) -> Option<u32> {
     v.parse().ok().filter(|n| *n > 0)
 }
 
-/// Bands of the distinct component carriers (PCI, band, channel) of one RAT:
-/// the serving cell first, then the firmware's CA list ("PCI,Band,Index,
-/// Channel,BW;…"), skipping placeholder rows and repeats. Same rules as the
-/// agent's signal page.
-fn component_bands(signal: &Value, nr: bool) -> Vec<String> {
+/// A carrier bandwidth in MHz ("100", "40MHz"); rejects firmware fillers.
+fn mhz(raw: &str) -> Option<u32> {
+    let digits: String = raw.trim().chars().take_while(|c| c.is_ascii_digit()).collect();
+    digits.parse::<u32>().ok().filter(|n| (1..=400).contains(n))
+}
+
+/// The distinct component carriers (PCI, band, channel) of one RAT as band
+/// labels with their bandwidth: the serving cell first, then the firmware's
+/// CA list ("PCI,Band,Index,Channel,BW;…"), skipping placeholder rows and
+/// repeats. Same rules as the agent's signal page.
+fn component_carriers(signal: &Value, nr: bool) -> Vec<(String, Option<u32>)> {
     let (list, pci, band, channel, prefix) = if nr {
         ("nrca", "nr5g_pci", "nr5g_action_band", "nr5g_action_channel", "n")
     } else {
@@ -178,30 +188,33 @@ fn component_bands(signal: &Value, nr: bool) -> Vec<String> {
         let p = p.trim().parse::<u32>().ok().filter(|p| *p <= max_pci)?;
         Some((p, band_number(b)?, c.trim().parse::<u32>().ok()?))
     };
-    let mut seen = Vec::new();
+    let mut seen: Vec<((u32, u32, u32), Option<u32>)> = Vec::new();
     let primary = key(
         text(&signal[pci]).as_str(),
         text(&signal[band]).as_str(),
         text(&signal[channel]).as_str(),
     );
-    seen.extend(primary);
+    let primary_mhz = if nr { mhz(&text(&signal["nr5g_bandwidth"])) } else { None };
+    seen.extend(primary.map(|k| (k, primary_mhz)));
     if nr || text(&signal["lteca_state"]) != "0" {
         for entry in text(&signal[list]).split(';') {
             let p: Vec<&str> = entry.split(',').map(str::trim).collect();
             if p.len() < 5 || (p[0] == "0" && p[3] == "0") {
                 continue;
             }
-            if let Some(k) = key(p[0], p[1], p[3]).filter(|k| !seen.contains(k)) {
-                seen.push(k);
+            let Some(k) = key(p[0], p[1], p[3]) else { continue };
+            match seen.iter_mut().find(|(s, _)| *s == k) {
+                Some((_, bw)) => *bw = bw.or(mhz(p[4])),
+                None => seen.push((k, mhz(p[4]))),
             }
         }
     }
     if seen.is_empty() {
         return band_number(&text(&signal[band]))
-            .map(|b| vec![format!("{prefix}{b}")])
+            .map(|b| vec![(format!("{prefix}{b}"), primary_mhz)])
             .unwrap_or_default();
     }
-    seen.into_iter().map(|(_, b, _)| format!("{prefix}{b}")).collect()
+    seen.into_iter().map(|((_, b, _), bw)| (format!("{prefix}{b}"), bw)).collect()
 }
 impl Dashboard {
     pub fn read(state: &Snapshot) -> Self {
@@ -294,10 +307,10 @@ impl Dashboard {
         if measured.is_some() {
             // EN-DC: the LTE anchor's carriers, then NR's. SA: NR only.
             if lte.is_some() && network != "5G SA" {
-                bands.extend(component_bands(signal, false));
+                bands.extend(component_carriers(signal, false));
             }
             if nr.is_some() {
-                bands.extend(component_bands(signal, true));
+                bands.extend(component_carriers(signal, true));
             }
         }
         let capacity = number(&battery["capacity"]).filter(|v| (0.0..=100.0).contains(v));
@@ -307,7 +320,14 @@ impl Dashboard {
             sinr_level: sinr_lv,
             quality: [rsrp_lv, sinr_lv].into_iter().filter(|l| *l > 0).min().unwrap_or(0),
             carriers: if bands.is_empty() { "—".into() } else { bands.len().to_string() },
-            bands: bands.join(" + "),
+            primary_band: bands.first().map(|(b, _)| b.clone()).unwrap_or_default(),
+            bandwidth: bands
+                .iter()
+                .filter_map(|(_, bw)| *bw)
+                .reduce(|a, b| a + b)
+                .map(|total| format!("{total} MHz"))
+                .unwrap_or_default(),
+            bands: bands.iter().map(|(b, _)| b.as_str()).collect::<Vec<_>>().join(" + "),
             battery: capacity.map(|v| format!("{v:.0}%")).unwrap_or("—".into()),
             battery_level: capacity.map_or(-1, |v| v.round() as i32),
             power: Power::read(battery, charger),
@@ -531,6 +551,7 @@ mod tests {
             "nrca":"512,41,0,513000,100;300,1,1,428000,20;0,0,0,0,0;",
             "lte_rsrp":-90,"lteca":"1,3,0,1650,20"}));
         assert_eq!((m.bands.as_str(), m.carriers.as_str()), ("n41 + n1", "2"));
+        assert_eq!((m.primary_band.as_str(), m.bandwidth.as_str()), ("n41", "120 MHz"));
         assert_eq!((m.sinr.as_str(), m.rsrp_level, m.sinr_level, m.quality), ("-23", 3, 1, 1));
         // EN-DC: LTE anchor (CA off) then NR.
         let m = read(json!({"network_type":"ENDC","lte_rsrp":-100,"lte_snr":5,
@@ -538,6 +559,7 @@ mod tests {
             "lteca_state":"0","lteca":"10,3,0,1650,20;11,1,1,300,10",
             "nr5g_rsrp":-95,"nr5g_snr":15,"nr5g_action_band":"78"}));
         assert_eq!((m.bands.as_str(), m.carriers.as_str()), ("B3 + n78", "2"));
+        assert_eq!((m.primary_band.as_str(), m.bandwidth.as_str()), ("B3", ""));
         assert_eq!((m.rsrp_level, m.sinr_level, m.quality), (2, 3, 2));
         // No service hides everything.
         let m = read(json!({"network_type":"NO_SERVICE","nr5g_rsrp":-80,"nr5g_snr":20}));

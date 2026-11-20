@@ -20,35 +20,38 @@ msgstr "U60 · Screen preview"
 msgid "Wi-Fi 可用"
 msgstr "Wi-Fi available"
 
+msgid "Wi-Fi 已关闭"
+msgstr "Wi-Fi off"
+
 msgid "Wi-Fi 连接卡片"
 msgstr "Wi-Fi connection card"
 
 msgid "{0} 台设备"
 msgstr "{0} devices"
 
-msgid "↑ 上传 / Mbps"
-msgstr "↑ Upload / Mbps"
+msgid "↑ 上传"
+msgstr "↑ Upload"
 
-msgid "↓ 下载 / Mbps"
-msgstr "↓ Download / Mbps"
+msgid "↓ 下载"
+msgstr "↓ Download"
 
 msgid "−2 分钟"
 msgstr "−2 min"
 
-msgid "一般"
-msgstr "Fair"
+msgid "上滑解锁"
+msgstr "Swipe up to unlock"
 
 msgid "二维码"
 msgstr "QR code"
+
+msgid "今日流量"
+msgstr "Today's data"
 
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "Prioritize responsiveness; heat and power use may increase."
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "Keep Wi-Fi, USB and local access"
-
-msgid "信号"
-msgstr "Signal"
 
 msgid "信号一般"
 msgstr "Fair signal"
@@ -71,6 +74,9 @@ msgstr "Shut down"
 msgid "关闭密码解锁"
 msgstr "Disable PIN lock"
 
+msgid "内存"
+msgstr "Memory"
+
 msgid "切换 Wi-Fi 频段"
 msgstr "Switch Wi-Fi band"
 
@@ -88,6 +94,9 @@ msgstr "Refresh connection status"
 
 msgid "取消"
 msgstr "Cancel"
+
+msgid "台设备"
+msgstr "devices"
 
 msgid "后台连接 · "
 msgstr "Agent · "
@@ -191,6 +200,9 @@ msgstr "Unlocked · Long only by unlocking"
 msgid "未联网"
 msgstr "Offline"
 
+msgid "本月流量"
+msgstr "Monthly data"
+
 msgid "本次 "
 msgstr "Session "
 
@@ -251,6 +263,9 @@ msgstr "Status"
 msgid "状态未知"
 msgstr "Unknown state"
 
+msgid "电池"
+msgstr "Battery"
+
 msgid "电池供电"
 msgstr "Battery powered"
 
@@ -296,9 +311,6 @@ msgstr "Automatic sleep"
 msgid "自定义颜色"
 msgstr "Custom color"
 
-msgid "良好"
-msgstr "Good"
-
 msgid "蜂窝恢复后继续使用所选带宽策略。"
 msgstr "Mobile radio is off. Your bandwidth choice is retained."
 
@@ -316,12 +328,6 @@ msgstr "Set unlock PIN"
 
 msgid "跟随系统"
 msgstr "System theme"
-
-msgid "载波数"
-msgstr "Carriers"
-
-msgid "较弱"
-msgstr "Weak"
 
 msgid "输入 "
 msgstr "Enter "
@@ -349,9 +355,6 @@ msgstr "Restart device"
 
 msgid "重新连接"
 msgstr "Reconnect"
-
-msgid "长按 1 秒解锁"
-msgstr "Hold 1 second to unlock"
 
 msgid "降低处理频率，吞吐能力可能下降。"
 msgstr "Reduce CPU frequency; throughput may decrease."

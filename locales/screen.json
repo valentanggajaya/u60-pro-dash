@@ -1119,6 +1119,13 @@
     "ja": "Wi-Fi 利用可能",
     "ko": "Wi-Fi 사용 가능"
   },
+  "Wi-Fi 已关闭": {
+    "en": "Wi-Fi off",
+    "zh-Hans": "Wi-Fi 已关闭",
+    "zh-Hant": "Wi-Fi 已關閉",
+    "ja": "Wi-Fi オフ",
+    "ko": "Wi-Fi 꺼짐"
+  },
   "Wi-Fi 已关闭，请开启后刷新。": {
     "en": "Wi-Fi is off, please refresh when you turn it on.",
     "zh-Hans": "Wi-Fi 已关闭，请开启后刷新。",
@@ -1357,12 +1364,26 @@
     "ja": "{0} のバージョン",
     "ko": "{0} 버전"
   },
+  "↑ 上传": {
+    "en": "↑ Upload",
+    "zh-Hans": "↑ 上传",
+    "zh-Hant": "↑ 上傳",
+    "ja": "↑ アップロード",
+    "ko": "↑ 업로드"
+  },
   "↑ 上传 / Mbps": {
     "zh-Hans": "↑ 上传 / Mbps",
     "zh-Hant": "↑ 上傳 / Mbps",
     "en": "↑ Upload / Mbps",
     "ja": "↑ 上り / Mbps",
     "ko": "↑ 업로드 / Mbps"
+  },
+  "↓ 下载": {
+    "en": "↓ Download",
+    "zh-Hans": "↓ 下载",
+    "zh-Hant": "↓ 下載",
+    "ja": "↓ ダウンロード",
+    "ko": "↓ 다운로드"
   },
   "↓ 下载 / Mbps": {
     "zh-Hans": "↓ 下载 / Mbps",
@@ -1384,13 +1405,6 @@
     "ja": "一回",
     "ko": "한 번",
     "zh-Hant": "一次"
-  },
-  "一般": {
-    "en": "Fair",
-    "zh-Hans": "一般",
-    "zh-Hant": "一般",
-    "ja": "普通",
-    "ko": "보통"
   },
   "上传": {
     "zh-Hans": "上传",
@@ -1454,6 +1468,13 @@
     "zh-Hant": "上次錯誤",
     "ja": "最後のエラー",
     "ko": "마지막 오류"
+  },
+  "上滑解锁": {
+    "en": "Swipe up to unlock",
+    "zh-Hans": "上滑解锁",
+    "zh-Hant": "上滑解鎖",
+    "ja": "上にスワイプで解除",
+    "ko": "위로 밀어 잠금 해제"
   },
   "上行速率": {
     "en": "Upload speed",
@@ -1839,6 +1860,13 @@
     "zh-Hant": "今日",
     "ja": "今日",
     "ko": "오늘날"
+  },
+  "今日流量": {
+    "en": "Today's data",
+    "zh-Hans": "今日流量",
+    "zh-Hant": "今日流量",
+    "ja": "今日のデータ",
+    "ko": "오늘 데이터"
   },
   "从 Tailscale 官方 stable 仓库下载 ARM64 tgz，核对 SHA-256 后安装。更新期间隧道中断，使用移动流量。": {
     "en": "Download the ARM64 tgz from Tailscale's official stable warehouse and install it after verifying SHA-256. During the update, the tunnel was interrupted and mobile traffic was used.",
@@ -8490,6 +8518,13 @@
     "ko": "전압",
     "zh-Hant": "電壓"
   },
+  "电池": {
+    "en": "Battery",
+    "zh-Hans": "电池",
+    "zh-Hant": "電池",
+    "ja": "バッテリー",
+    "ko": "배터리"
+  },
   "电池与电源": {
     "en": "Battery & power",
     "zh-Hans": "电池与电源",
@@ -9659,13 +9694,6 @@
     "ja": "色を指定",
     "ko": "사용자 지정 색상"
   },
-  "良好": {
-    "en": "Good",
-    "zh-Hans": "良好",
-    "zh-Hant": "良好",
-    "ja": "良好",
-    "ko": "양호"
-  },
   "节点名称": {
     "en": "Node name",
     "zh-Hans": "节点名称",
@@ -10758,26 +10786,12 @@
     "ja": "キャリア,細胞およびラジオ診断",
     "ko": "운반기, 세포 및 전파 진단"
   },
-  "载波数": {
-    "en": "Carriers",
-    "zh-Hans": "载波数",
-    "zh-Hant": "載波數",
-    "ja": "キャリア数",
-    "ko": "반송파 수"
-  },
   "载波聚合": {
     "en": "Carrier aggregation",
     "zh-Hans": "载波聚合",
     "zh-Hant": "載波聚合",
     "ja": "キャリアアグリゲーション",
     "ko": "반송파 집성"
-  },
-  "较弱": {
-    "en": "Weak",
-    "zh-Hans": "较弱",
-    "zh-Hant": "較弱",
-    "ja": "弱い",
-    "ko": "약함"
   },
   "辅载波": {
     "en": "Secondary carrier",

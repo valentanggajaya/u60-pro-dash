@@ -649,6 +649,8 @@ impl State {
         ui.set_rsrp_level(if offline { 0 } else { 3 });
         ui.set_sinr_level(if offline { 0 } else { 2 });
         ui.set_signal_quality(if offline { 0 } else { 2 });
+        ui.set_primary_band(if offline { "" } else { "n41" }.into());
+        ui.set_bandwidth(if offline { "" } else { "120 MHz" }.into());
         ui.set_tailnet_status(
             if self.scenario == 2 {
                 crate::i18n::tr("等待网络")
@@ -743,6 +745,8 @@ impl State {
             ui.set_rsrp_level(dashboard.rsrp_level);
             ui.set_sinr_level(dashboard.sinr_level);
             ui.set_signal_quality(dashboard.quality);
+            ui.set_primary_band(dashboard.primary_band.into());
+            ui.set_bandwidth(dashboard.bandwidth.into());
             ui.set_network_online(dashboard.online);
             ui.set_battery(dashboard.battery.into());
             ui.set_battery_level(dashboard.battery_level);
@@ -837,12 +841,14 @@ impl State {
         if active && ui.get_view() == 7 {
             self.features.stream(&snapshot);
         }
+        // Home cards and the lock screen rings (memory, data) share these
+        // reads; they stop while asleep or on other pages.
         self.home.tick(
             agent,
-            active
+            !ui.get_asleep()
                 && snapshot.authenticated
                 && snapshot.status == crate::agent::Status::Live
-                && ui.get_view() == 0,
+                && (self.security.locked || (active && ui.get_view() == 0)),
             &self.prefs.home,
             &snapshot,
         );
@@ -1318,7 +1324,7 @@ impl App {
                     if let Some($u) = weak.upgrade() {
                         let mut $s = state.borrow_mut();
                         if ($s.security.locked || $s.security.mode != crate::security::Mode::Hold)
-                            && !matches!(stringify!($method), "on_power" | "on_activity" | "on_hold_start" | "on_hold_tick" | "on_hold_end" | "on_hold_cancel" | "on_pin_digit" | "on_pin_backspace" | "on_pin_submit" | "on_pin_cancel" | "on_pin_key") {
+                            && !matches!(stringify!($method), "on_power" | "on_activity" | "on_hold_start" | "on_hold_tick" | "on_hold_end" | "on_hold_cancel" | "on_swipe_unlock" | "on_pin_digit" | "on_pin_backspace" | "on_pin_submit" | "on_pin_cancel" | "on_pin_key") {
                             return;
                         }
                         if $u.get_editor_visible() && !matches!(stringify!($method), "on_power" | "on_activity" | "on_editor_submit" | "on_editor_cancel") { return; }
@@ -1760,6 +1766,9 @@ impl App {
         });
         bind!(on_hold_cancel, |s, _u| {
             s.security.hold_cancel();
+        });
+        bind!(on_swipe_unlock, |s, _u| {
+            s.security.swipe_unlock();
         });
         bind!(on_pin_setup, |s, _u, disable| {
             s.security.setup(disable);

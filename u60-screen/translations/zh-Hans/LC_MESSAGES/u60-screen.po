@@ -20,35 +20,38 @@ msgstr "U60 · 原生屏幕预览"
 msgid "Wi-Fi 可用"
 msgstr "Wi-Fi 可用"
 
+msgid "Wi-Fi 已关闭"
+msgstr "Wi-Fi 已关闭"
+
 msgid "Wi-Fi 连接卡片"
 msgstr "Wi-Fi 连接卡片"
 
 msgid "{0} 台设备"
 msgstr "{0} 台设备"
 
-msgid "↑ 上传 / Mbps"
-msgstr "↑ 上传 / Mbps"
+msgid "↑ 上传"
+msgstr "↑ 上传"
 
-msgid "↓ 下载 / Mbps"
-msgstr "↓ 下载 / Mbps"
+msgid "↓ 下载"
+msgstr "↓ 下载"
 
 msgid "−2 分钟"
 msgstr "−2 分钟"
 
-msgid "一般"
-msgstr "一般"
+msgid "上滑解锁"
+msgstr "上滑解锁"
 
 msgid "二维码"
 msgstr "二维码"
+
+msgid "今日流量"
+msgstr "今日流量"
 
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "优先响应与处理能力，温度和功耗可能上升。"
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "保留 Wi-Fi、USB 与本地管理"
-
-msgid "信号"
-msgstr "信号"
 
 msgid "信号一般"
 msgstr "信号一般"
@@ -71,6 +74,9 @@ msgstr "关机"
 msgid "关闭密码解锁"
 msgstr "关闭密码解锁"
 
+msgid "内存"
+msgstr "内存"
+
 msgid "切换 Wi-Fi 频段"
 msgstr "切换 Wi-Fi 频段"
 
@@ -88,6 +94,9 @@ msgstr "刷新连接状态"
 
 msgid "取消"
 msgstr "取消"
+
+msgid "台设备"
+msgstr "台设备"
 
 msgid "后台连接 · "
 msgstr "后台连接 · "
@@ -191,6 +200,9 @@ msgstr "未开启 · 仅长按解锁"
 msgid "未联网"
 msgstr "未联网"
 
+msgid "本月流量"
+msgstr "本月流量"
+
 msgid "本次 "
 msgstr "本次 "
 
@@ -251,6 +263,9 @@ msgstr "状态"
 msgid "状态未知"
 msgstr "状态未知"
 
+msgid "电池"
+msgstr "电池"
+
 msgid "电池供电"
 msgstr "电池供电"
 
@@ -296,9 +311,6 @@ msgstr "自动熄屏"
 msgid "自定义颜色"
 msgstr "自定义颜色"
 
-msgid "良好"
-msgstr "良好"
-
 msgid "蜂窝恢复后继续使用所选带宽策略。"
 msgstr "蜂窝恢复后继续使用所选带宽策略。"
 
@@ -316,12 +328,6 @@ msgstr "设置解锁密码"
 
 msgid "跟随系统"
 msgstr "跟随系统"
-
-msgid "载波数"
-msgstr "载波数"
-
-msgid "较弱"
-msgstr "较弱"
 
 msgid "输入 "
 msgstr "输入 "
@@ -349,9 +355,6 @@ msgstr "重启设备"
 
 msgid "重新连接"
 msgstr "重新连接"
-
-msgid "长按 1 秒解锁"
-msgstr "长按 1 秒解锁"
 
 msgid "降低处理频率，吞吐能力可能下降。"
 msgstr "降低处理频率，吞吐能力可能下降。"

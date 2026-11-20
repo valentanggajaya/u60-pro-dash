@@ -20,35 +20,38 @@ msgstr "U60 · 화면 미리보기"
 msgid "Wi-Fi 可用"
 msgstr "Wi-Fi 사용 가능"
 
+msgid "Wi-Fi 已关闭"
+msgstr "Wi-Fi 꺼짐"
+
 msgid "Wi-Fi 连接卡片"
 msgstr "Wi-Fi 연결 카드"
 
 msgid "{0} 台设备"
 msgstr "기기 {0}대"
 
-msgid "↑ 上传 / Mbps"
-msgstr "↑ 업로드 / Mbps"
+msgid "↑ 上传"
+msgstr "↑ 업로드"
 
-msgid "↓ 下载 / Mbps"
-msgstr "↓ 다운로드 / Mbps"
+msgid "↓ 下载"
+msgstr "↓ 다운로드"
 
 msgid "−2 分钟"
 msgstr "−2분"
 
-msgid "一般"
-msgstr "보통"
+msgid "上滑解锁"
+msgstr "위로 밀어 잠금 해제"
 
 msgid "二维码"
 msgstr "QR 코드"
+
+msgid "今日流量"
+msgstr "오늘 데이터"
 
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "응답 속도를 우선하며 온도와 전력 소비가 늘 수 있습니다."
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "Wi-Fi, USB, 로컬 관리 유지"
-
-msgid "信号"
-msgstr "신호"
 
 msgid "信号一般"
 msgstr "신호 보통"
@@ -71,6 +74,9 @@ msgstr "전원 끄기"
 msgid "关闭密码解锁"
 msgstr "PIN 잠금 해제"
 
+msgid "内存"
+msgstr "기억력"
+
 msgid "切换 Wi-Fi 频段"
 msgstr "Wi-Fi 대역 전환"
 
@@ -88,6 +94,9 @@ msgstr "연결 상태를 업데이트"
 
 msgid "取消"
 msgstr "취소"
+
+msgid "台设备"
+msgstr "기기"
 
 msgid "后台连接 · "
 msgstr "관리 서비스 · "
@@ -191,6 +200,9 @@ msgstr "열리지 않은 · 잠금 잠금"
 msgid "未联网"
 msgstr "오프라인"
 
+msgid "本月流量"
+msgstr "이번 달 데이터"
+
 msgid "本次 "
 msgstr "이번 연결 "
 
@@ -251,6 +263,9 @@ msgstr "상태"
 msgid "状态未知"
 msgstr "알 수 없는 상태"
 
+msgid "电池"
+msgstr "배터리"
+
 msgid "电池供电"
 msgstr "배터리 전원"
 
@@ -296,9 +311,6 @@ msgstr "자동 화면 끄기"
 msgid "自定义颜色"
 msgstr "사용자 지정 색상"
 
-msgid "良好"
-msgstr "양호"
-
 msgid "蜂窝恢复后继续使用所选带宽策略。"
 msgstr "모바일 무선이 복구되면 선택한 대역폭 정책을 계속 사용합니다."
 
@@ -316,12 +328,6 @@ msgstr "잠금 해제 PIN 설정"
 
 msgid "跟随系统"
 msgstr "시스템 테마"
-
-msgid "载波数"
-msgstr "반송파 수"
-
-msgid "较弱"
-msgstr "약함"
 
 msgid "输入 "
 msgstr "입력"
@@ -349,9 +355,6 @@ msgstr "장치 다시 시작"
 
 msgid "重新连接"
 msgstr "다시 연결"
-
-msgid "长按 1 秒解锁"
-msgstr "1초 길게 눌러 잠금 해제"
 
 msgid "降低处理频率，吞吐能力可能下降。"
 msgstr "CPU 주파수를 낮춥니다. 처리량이 줄 수 있습니다."

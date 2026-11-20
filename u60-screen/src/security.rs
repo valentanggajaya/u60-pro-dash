@@ -206,7 +206,16 @@ impl ScreenLock {
                 .take()
                 .is_some_and(|t| t.elapsed() >= HOLD);
         self.progress = 0.;
-        if !complete || !self.locked || self.mode != Mode::Hold {
+        if complete {
+            self.swipe_unlock();
+        }
+    }
+    /// A completed swipe up on the lock screen: same outcome as a completed
+    /// hold (PIN entry when a PIN is set, otherwise unlocked).
+    pub fn swipe_unlock(&mut self) {
+        self.hold_started = None;
+        self.progress = 0.;
+        if !self.locked || self.mode != Mode::Hold {
             return;
         }
         if self.enabled() {

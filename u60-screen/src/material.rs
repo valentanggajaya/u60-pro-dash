@@ -9,20 +9,26 @@ pub fn install(ui: &crate::Screen) -> Result<()> {
     let palette = ui.global::<crate::Palette>();
     palette.set_material_light(decode(include_bytes!("../assets/material-light.png"))?);
     palette.set_material_dark(decode(include_bytes!("../assets/material-dark.png"))?);
+    // Full-screen night wallpaper behind the dark theme's translucent cards.
+    palette.set_wallpaper_dark(decode_sized(include_bytes!("../assets/wallpaper-dark.png"), 320, 480)?);
     Ok(())
 }
 
 fn decode(bytes: &[u8]) -> Result<Image> {
+    decode_sized(bytes, 320, 180)
+}
+
+fn decode_sized(bytes: &[u8], width: u32, height: u32) -> Result<Image> {
     let mut reader = png::Decoder::new(Cursor::new(bytes)).read_info()?;
     let info = reader.info();
     ensure!(
-        info.width == 320
-            && info.height == 180
+        info.width == width
+            && info.height == height
             && info.bit_depth == png::BitDepth::Eight
             && info.color_type == png::ColorType::Rgb,
         "invalid embedded material texture"
     );
-    let mut pixels = SharedPixelBuffer::<Rgb8Pixel>::new(320, 180);
+    let mut pixels = SharedPixelBuffer::<Rgb8Pixel>::new(width, height);
     reader.next_frame(pixels.make_mut_bytes())?;
     Ok(Image::from_rgb8(pixels))
 }

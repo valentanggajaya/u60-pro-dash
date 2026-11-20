@@ -141,7 +141,8 @@ impl Chrome {
                     enabled && now.duration_since(at) < Duration::from_secs(65)
                 }),
         );
-        if !ui.get_locked() {
+        // The speed chart runs on the lock screen and on the home page.
+        if !ui.get_locked() && (ui.get_asleep() || ui.get_view() != 0) {
             self.history.pause(now);
             return;
         }

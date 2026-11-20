@@ -122,6 +122,14 @@ export component Screen inherits Window {
     in-out property <int> rsrp-level: 3;
     in-out property <int> sinr-level: 2;
     in-out property <int> signal-quality: 2;
+    in-out property <string> primary-band: "n41";
+    in-out property <string> bandwidth: "120 MHz";
+    // Lock screen rings and home cards. -1 = unknown / no monthly limit.
+    in-out property <int> memory-percent: 32;
+    in-out property <string> today-data: "1.24 GB";
+    in-out property <string> month-data: "62.8 GB";
+    in-out property <float> month-fraction: 0.42;
+    callback swipe-unlock;
     pure function level-color(level: int) -> color {
         return level >= 3 ? Palette.good : level == 2 ? Palette.warning : level == 1 ? Palette.bad : Palette.text;
     }
@@ -260,7 +268,8 @@ export component Screen inherits Window {
             double-tapped => { root.power(); }
         }
         Rectangle {
-            y: 28px; width: parent.width; height: 40px;
+            // Home has no title row: the signal card names the carrier.
+            y: 28px; width: parent.width; height: 40px; visible: root.view != 0;
             HorizontalLayout {
                 padding-left: 14px; padding-right: 14px; spacing: 8px;
                 if root.can-back: Rectangle {
@@ -282,81 +291,144 @@ export component Screen inherits Window {
             }
         }
         scroll := Flickable {
-            x: 0px; y: 68px; width: 320px; height: 356px;
+            x: 0px; y: root.view == 0 ? 32px : 68px; width: 320px; height: root.view == 0 ? 392px : 356px;
             content-width: self.width; content-height: content.height;
             changed content-y => { root.activity(); }
             content := VerticalLayout {
                 x: 0px; y: 0px; width: scroll.width; height: max(self.min-height, self.preferred-height);
                 padding-left: 12px; padding-right: 12px; padding-top: 2px; padding-bottom: 12px; spacing: root.view == 0 ? 8px : 10px;
-                // Home: big speeds, a colour-coded signal card, three metrics,
-                // one Wi-Fi row (tap for the large QR) and the service dots.
-                // Text is at least 13 px so it reads at arm length.
-                if root.view == 0: Rectangle {
-                    height: 80px;
-                    Rectangle { x: 0px; y: 0px; width: parent.width; height: 1px; background: Palette.line; }
-                    HorizontalLayout {
-                        y: 10px; height: 66px; spacing: 16px;
-                        VerticalLayout {
-                            Label { text: @tr("↓ 下载 / Mbps"); height: 20px; font-size: 13px; color: Palette.muted; }
-                            Label { text: root.download; height: 46px; font-size: 34px; font-weight: 650; color: Palette.accent-ink; }
+                // Home as cards over the wallpaper: signal, speed with chart,
+                // today / connected, battery; then quick metrics, Wi-Fi and
+                // services further down. Text is at least 13 px.
+                if root.view == 0: GlassPanel {
+                    translucent: true; height: 106px;
+                    Label {
+                        x: 14px; y: 6px; width: 140px; height: 46px;
+                        text: root.airplane-state == 1 || root.network-badge == "" ? "—" : root.network-badge;
+                        font-size: 38px; font-weight: 700; vertical-alignment: center;
+                    }
+                    if root.signal-quality > 0: Rectangle {
+                        x: parent.width - self.width - 12px; y: 14px; height: 26px;
+                        width: quality-text.preferred-width + 34px; border-radius: 13px;
+                        background: root.level-color(root.signal-quality).with-alpha(0.16);
+                        Rectangle { x: 12px; y: 9px; width: 8px; height: 8px; border-radius: 4px; background: root.level-color(root.signal-quality); }
+                        quality-text := Label {
+                            x: 25px; y: 0px; width: self.preferred-width; height: parent.height;
+                            text: root.signal-quality >= 3 ? @tr("信号良好") : root.signal-quality == 2 ? @tr("信号一般") : @tr("信号较弱");
+                            font-size: 13px; font-weight: 650; color: root.level-color(root.signal-quality); vertical-alignment: center;
                         }
-                        VerticalLayout {
-                            Label { text: @tr("↑ 上传 / Mbps"); height: 20px; font-size: 13px; color: Palette.muted; }
-                            Label { text: root.upload; height: 46px; font-size: 34px; font-weight: 650; }
+                    }
+                    Label {
+                        x: 14px; y: 52px; width: parent.width - 28px; height: 22px;
+                        text: root.carrier-label
+                            + (root.signal-bands != "" ? " · " + root.signal-bands : "")
+                            + (root.bandwidth != "" ? " · " + root.bandwidth : "");
+                        font-size: 14px; vertical-alignment: center;
+                    }
+                    HorizontalLayout {
+                        x: 14px; y: 76px; width: parent.width - 44px; height: 24px; spacing: 14px; alignment: start;
+                        for reading in [
+                            { title: "RSRP", value: root.signal-strength, unit: " dBm", level: root.rsrp-level },
+                            { title: "SINR", value: root.signal-sinr, unit: " dB", level: root.sinr-level },
+                            { title: "CA", value: root.signal-carriers, unit: "", level: 0 }
+                        ]: HorizontalLayout {
+                            spacing: 5px;
+                            Label { text: reading.title; font-size: 13px; color: Palette.muted; vertical-alignment: center; }
+                            Label {
+                                text: reading.value + (reading.value == "—" ? "" : reading.unit);
+                                font-size: 17px; font-weight: 650; vertical-alignment: center;
+                                color: reading.level > 0 ? root.level-color(reading.level) : Palette.text;
+                            }
+                        }
+                    }
+                    Label { x: parent.width - 24px; y: 76px; width: 12px; height: 24px; text: "›"; font-size: 20px; color: Palette.accent-ink; vertical-alignment: center; }
+                    TouchArea { clicked => { root.open("signal-live"); } }
+                }
+                if root.view == 0: GlassPanel {
+                    translucent: true; height: 118px;
+                    Label { x: 14px; y: 10px; width: 130px; height: 18px; text: @tr("↓ 下载"); font-size: 13px; color: Palette.muted; }
+                    Label { x: parent.width - 144px; y: 10px; width: 130px; height: 18px; text: @tr("↑ 上传"); font-size: 13px; color: Palette.muted; horizontal-alignment: right; }
+                    HorizontalLayout {
+                        x: 14px; y: 28px; width: 170px; height: 44px; spacing: 4px; alignment: start;
+                        Label { text: root.download; font-size: 36px; font-weight: 650; color: Palette.accent-ink; vertical-alignment: bottom; }
+                        Label { text: "Mbps"; font-size: 13px; color: Palette.muted; vertical-alignment: bottom; }
+                    }
+                    HorizontalLayout {
+                        x: parent.width - 134px; y: 28px; width: 120px; height: 44px; spacing: 4px; alignment: end;
+                        Label { text: root.upload; font-size: 28px; font-weight: 650; color: Palette.warning; vertical-alignment: bottom; }
+                        Label { text: "Mbps"; font-size: 13px; color: Palette.muted; vertical-alignment: bottom; }
+                    }
+                    Rectangle {
+                        x: 14px; y: 78px; width: parent.width - 28px; height: 32px; clip: true;
+                        Rectangle { y: parent.height - 1px; width: parent.width; height: 1px; background: Palette.line; }
+                        if root.airplane-state != 1 && root.lock-download-path != "": Path {
+                            width: parent.width; height: parent.height; commands: root.lock-download-path;
+                            viewbox-width: 272; viewbox-height: 54; fit: fill;
+                            stroke: Palette.accent-ink; stroke-width: 1.6px; stroke-line-cap: round; stroke-line-join: round;
+                        }
+                        if root.airplane-state != 1 && root.lock-upload-path != "": Path {
+                            width: parent.width; height: parent.height; commands: root.lock-upload-path;
+                            viewbox-width: 272; viewbox-height: 54; fit: fill;
+                            stroke: Palette.warning; stroke-width: 1.4px; stroke-line-cap: round; stroke-line-join: round;
+                        }
+                        if root.airplane-state == 1 || root.lock-samples < 2: Label {
+                            width: parent.width; height: parent.height;
+                            text: root.airplane-state == 1 ? @tr("蜂窝流量已暂停") : @tr("正在积累趋势");
+                            font-size: 13px; color: Palette.muted; horizontal-alignment: center; vertical-alignment: center;
                         }
                     }
                     TouchArea { clicked => { root.open("traffic"); } }
                 }
-                if root.view == 0 && root.home-show-radio: GlassPanel {
-                    translucent: true; height: 108px;
-                    Label {
-                        x: 12px; y: 8px; width: 140px; height: 24px;
-                        text: @tr("信号"); font-size: 14px; font-weight: 650; color: Palette.muted; vertical-alignment: center;
+                if root.view == 0: HorizontalLayout {
+                    height: 76px; spacing: 8px;
+                    GlassPanel {
+                        translucent: true; horizontal-stretch: 1;
+                        Label { x: 14px; y: 8px; width: parent.width - 20px; height: 18px; text: @tr("今日流量"); font-size: 13px; color: Palette.muted; }
+                        Label { x: 14px; y: 26px; width: parent.width - 20px; height: 28px; text: root.today-data; font-size: 22px; font-weight: 650; vertical-alignment: center; }
+                        Label { x: 14px; y: 54px; width: parent.width - 20px; height: 16px; text: @tr("本月流量") + " " + root.month-data; font-size: 12px; color: Palette.muted; vertical-alignment: center; }
+                        TouchArea { clicked => { root.open("usage"); } }
                     }
-                    if root.signal-quality > 0: Rectangle {
-                        x: parent.width - self.width - 10px; y: 8px; height: 24px;
-                        width: quality-text.preferred-width + 32px; border-radius: 12px;
-                        background: root.level-color(root.signal-quality).with-alpha(0.16);
-                        Rectangle { x: 11px; y: 8px; width: 8px; height: 8px; border-radius: 4px; background: root.level-color(root.signal-quality); }
-                        quality-text := Label {
-                            x: 24px; y: 0px; width: self.preferred-width; height: parent.height;
-                            text: root.signal-quality >= 3 ? @tr("良好") : root.signal-quality == 2 ? @tr("一般") : @tr("较弱");
-                            font-size: 13px; font-weight: 650; color: root.level-color(root.signal-quality); vertical-alignment: center;
+                    GlassPanel {
+                        translucent: true; horizontal-stretch: 1;
+                        Label { x: 14px; y: 8px; width: parent.width - 20px; height: 18px; text: @tr("已连接"); font-size: 13px; color: Palette.muted; }
+                        HorizontalLayout {
+                            x: 14px; y: 26px; width: parent.width - 20px; height: 30px; spacing: 5px; alignment: start;
+                            Label { text: root.client-count; font-size: 24px; font-weight: 650; vertical-alignment: bottom; }
+                            Label { text: @tr("台设备"); font-size: 13px; color: Palette.muted; vertical-alignment: bottom; }
                         }
+                        Label { x: 14px; y: 54px; width: parent.width - 20px; height: 16px; text: root.wifi-enabled ? "Wi-Fi · " + root.home-wifi-band : @tr("Wi-Fi 已关闭"); font-size: 12px; color: Palette.muted; vertical-alignment: center; }
+                        TouchArea { clicked => { root.open("clients"); } }
                     }
-                    HorizontalLayout {
-                        x: 12px; y: 36px; width: parent.width - 24px; height: 46px; spacing: 8px;
-                        for reading in [
-                            { title: "RSRP", value: root.signal-strength, unit: "dBm", level: root.rsrp-level },
-                            { title: "SINR", value: root.signal-sinr, unit: "dB", level: root.sinr-level },
-                            { title: @tr("载波数"), value: root.signal-carriers, unit: "", level: 0 }
-                        ]: VerticalLayout {
-                            horizontal-stretch: 1; min-width: 0px;
-                            Label { text: reading.title; height: 18px; font-size: 13px; color: Palette.muted; }
-                            HorizontalLayout {
-                                height: 28px; spacing: 3px; alignment: start;
-                                Label { text: reading.value; font-size: 23px; font-weight: 650; color: root.level-color(reading.level); vertical-alignment: bottom; }
-                                if reading.unit != "": Label { text: reading.unit; font-size: 12px; color: Palette.muted; vertical-alignment: bottom; }
-                            }
-                        }
-                    }
-                    Label {
-                        x: 12px; y: 84px; width: parent.width - 40px; height: 20px;
-                        text: root.signal-bands != "" ? root.network-mode + " · " + root.signal-bands : root.radio-label;
-                        font-size: 14px; vertical-alignment: center;
-                    }
-                    Label { x: parent.width - 22px; y: 82px; width: 12px; height: 22px; text: "›"; font-size: 20px; color: Palette.accent-ink; vertical-alignment: center; }
-                    TouchArea { clicked => { root.open("signal-live"); } }
                 }
-                if root.view == 0 && root.home-metrics.length > 0: Rectangle {
-                    height: 54px;
+                if root.view == 0: GlassPanel {
+                    translucent: true; height: 70px;
+                    Label { x: 14px; y: 8px; width: 120px; height: 18px; text: @tr("电池"); font-size: 13px; color: Palette.muted; }
+                    Label { x: parent.width - 174px; y: 8px; width: 160px; height: 18px; text: root.power-label; font-size: 13px; color: Palette.muted; horizontal-alignment: right; }
                     HorizontalLayout {
-                        y: 2px; height: 52px; spacing: 8px;
+                        x: 14px; y: 28px; width: 76px; height: 34px; spacing: 1px; alignment: start;
+                        Label { text: root.battery-level >= 0 ? "" + root.battery-level : "—"; font-size: 26px; font-weight: 650; vertical-alignment: bottom; }
+                        if root.battery-level >= 0: Label { text: "%"; font-size: 14px; color: Palette.muted; vertical-alignment: bottom; }
+                    }
+                    Rectangle {
+                        x: 92px; y: 40px; width: parent.width - 106px; height: 14px;
+                        for i in 20: Rectangle {
+                            x: i * parent.width / 20; y: 0px; width: parent.width / 20 - 3px; height: parent.height; border-radius: 2px;
+                            background: i < root.battery-level / 5
+                                ? (root.battery-level <= 10 ? Palette.bad : root.battery-level <= 20 ? Palette.warning : Palette.good)
+                                : Palette.line;
+                        }
+                    }
+                    TouchArea { clicked => { root.open("battery-details"); } }
+                }
+                if root.view == 0 && root.home-metrics.length > 0: GlassPanel {
+                    translucent: true; height: 64px;
+                    HorizontalLayout {
+                        x: 14px; y: 6px; width: parent.width - 28px; height: 52px; spacing: 8px;
                         for metric in root.home-metrics: Rectangle {
                             horizontal-stretch: 1; min-width: 0px;
                             VerticalLayout {
                                 Label { text: metric.title; height: 20px; font-size: 13px; color: Palette.muted; }
-                                Label { text: metric.subtitle; height: 30px; font-size: 21px; font-weight: 650; }
+                                Label { text: metric.subtitle; height: 30px; font-size: 20px; font-weight: 650; }
                             }
                             TouchArea { clicked => { root.open(metric.tag == "clients" ? "clients" : metric.tag == "month" ? "usage" : metric.tag == "battery" ? "battery-details" : "resources"); } }
                         }
@@ -709,6 +781,8 @@ export component Screen inherits Window {
             clock: root.lock-clock; date: root.lock-date;
             download-path: root.lock-download-path; upload-path: root.lock-upload-path; samples: root.lock-samples;
             battery: root.battery; network-online: root.network-online; signal-quality: root.signal-quality;
+            primary-band: root.primary-band; memory-percent: root.memory-percent;
+            month-data: root.month-data; month-fraction: root.month-fraction;
             battery-level: root.battery-level; charging: root.charging;
             external-power: root.external-power; bypass-power: root.bypass-power; power-label: root.power-label;
             network-badge: root.network-badge; signal-level: root.signal-level;
@@ -720,6 +794,7 @@ export component Screen inherits Window {
             hold-tick => { root.hold-tick(); }
             hold-end(inside) => { root.hold-end(inside); }
             hold-cancel => { root.hold-cancel(); }
+            swipe-unlock => { root.swipe-unlock(); }
             sleep-now => { root.power(); }
         }
         if root.pin-visible: PinPad {
