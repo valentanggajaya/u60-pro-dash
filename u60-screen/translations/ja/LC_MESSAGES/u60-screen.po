@@ -35,14 +35,32 @@ msgstr "↓ 下り / Mbps"
 msgid "−2 分钟"
 msgstr "−2 分"
 
+msgid "一般"
+msgstr "普通"
+
+msgid "二维码"
+msgstr "QR コード"
+
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "応答性を優先。温度と消費電力が上がる場合があります。"
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "Wi-Fi、USB、ローカル管理を維持"
 
+msgid "信号"
+msgstr "信号"
+
+msgid "信号一般"
+msgstr "電波普通"
+
+msgid "信号良好"
+msgstr "電波良好"
+
 msgid "信号详情"
 msgstr "電波の詳細"
+
+msgid "信号较弱"
+msgstr "電波が弱い"
 
 msgid "修改解锁密码"
 msgstr "解除 PIN を変更"
@@ -91,6 +109,9 @@ msgstr "サブネット接続テスト"
 
 msgid "完成"
 msgstr "完了"
+
+msgid "密码"
+msgstr "パスワード"
 
 msgid "密码解锁"
 msgstr "パインロックを解除"
@@ -275,6 +296,9 @@ msgstr "自動消灯"
 msgid "自定义颜色"
 msgstr "色を指定"
 
+msgid "良好"
+msgstr "良好"
+
 msgid "蜂窝恢复后继续使用所选带宽策略。"
 msgstr "モバイル無線の再開後も選択した帯域設定を使用します。"
 
@@ -292,6 +316,12 @@ msgstr "解除 PIN を設定"
 
 msgid "跟随系统"
 msgstr "システム設定"
+
+msgid "载波数"
+msgstr "キャリア数"
+
+msgid "较弱"
+msgstr "弱い"
 
 msgid "输入 "
 msgstr "入力する"

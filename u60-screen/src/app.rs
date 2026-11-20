@@ -642,6 +642,13 @@ impl State {
             }
             .into(),
         );
+        let offline = self.scenario == 2;
+        ui.set_signal_sinr(if offline { "—" } else { "12" }.into());
+        ui.set_signal_bands(if offline { "" } else { "n41 + n1" }.into());
+        ui.set_signal_carriers(if offline { "—" } else { "2" }.into());
+        ui.set_rsrp_level(if offline { 0 } else { 3 });
+        ui.set_sinr_level(if offline { 0 } else { 2 });
+        ui.set_signal_quality(if offline { 0 } else { 2 });
         ui.set_tailnet_status(
             if self.scenario == 2 {
                 crate::i18n::tr("等待网络")
@@ -730,6 +737,12 @@ impl State {
             ui.set_network_mode(dashboard.network.into());
             ui.set_radio_label(dashboard.radio.into());
             ui.set_signal_strength(dashboard.rsrp.into());
+            ui.set_signal_sinr(dashboard.sinr.into());
+            ui.set_signal_bands(dashboard.bands.into());
+            ui.set_signal_carriers(dashboard.carriers.into());
+            ui.set_rsrp_level(dashboard.rsrp_level);
+            ui.set_sinr_level(dashboard.sinr_level);
+            ui.set_signal_quality(dashboard.quality);
             ui.set_network_online(dashboard.online);
             ui.set_battery(dashboard.battery.into());
             ui.set_battery_level(dashboard.battery_level);

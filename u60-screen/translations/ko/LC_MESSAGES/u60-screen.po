@@ -35,14 +35,32 @@ msgstr "↓ 다운로드 / Mbps"
 msgid "−2 分钟"
 msgstr "−2분"
 
+msgid "一般"
+msgstr "보통"
+
+msgid "二维码"
+msgstr "QR 코드"
+
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "응답 속도를 우선하며 온도와 전력 소비가 늘 수 있습니다."
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "Wi-Fi, USB, 로컬 관리 유지"
 
+msgid "信号"
+msgstr "신호"
+
+msgid "信号一般"
+msgstr "신호 보통"
+
+msgid "信号良好"
+msgstr "신호 양호"
+
 msgid "信号详情"
 msgstr "신호 상세"
+
+msgid "信号较弱"
+msgstr "신호 약함"
 
 msgid "修改解锁密码"
 msgstr "잠금 해제 PIN 변경"
@@ -91,6 +109,9 @@ msgstr "서브넷 연결 검사"
 
 msgid "完成"
 msgstr "완료"
+
+msgid "密码"
+msgstr "비밀번호"
 
 msgid "密码解锁"
 msgstr "PIN 잠금 해제"
@@ -275,6 +296,9 @@ msgstr "자동 화면 끄기"
 msgid "自定义颜色"
 msgstr "사용자 지정 색상"
 
+msgid "良好"
+msgstr "양호"
+
 msgid "蜂窝恢复后继续使用所选带宽策略。"
 msgstr "모바일 무선이 복구되면 선택한 대역폭 정책을 계속 사용합니다."
 
@@ -292,6 +316,12 @@ msgstr "잠금 해제 PIN 설정"
 
 msgid "跟随系统"
 msgstr "시스템 테마"
+
+msgid "载波数"
+msgstr "반송파 수"
+
+msgid "较弱"
+msgstr "약함"
 
 msgid "输入 "
 msgstr "입력"

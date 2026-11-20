@@ -1385,6 +1385,13 @@
     "ko": "한 번",
     "zh-Hant": "一次"
   },
+  "一般": {
+    "en": "Fair",
+    "zh-Hans": "一般",
+    "zh-Hant": "一般",
+    "ja": "普通",
+    "ko": "보통"
+  },
   "上传": {
     "zh-Hans": "上传",
     "en": "Upload",
@@ -1699,6 +1706,13 @@
     "zh-Hant": "主載波",
     "ja": "プライマリキャリア",
     "ko": "주 반송파"
+  },
+  "二维码": {
+    "en": "QR code",
+    "zh-Hans": "二维码",
+    "zh-Hant": "QR 碼",
+    "ja": "QR コード",
+    "ko": "QR 코드"
   },
   "二维码使用已保存的热点配置，解锁机身后查看。": {
     "zh-Hans": "二维码使用已保存的热点配置，解锁机身后查看。",
@@ -2365,6 +2379,13 @@
     "ko": "신호, 교통 및 배터리",
     "zh-Hant": "訊號、流量、電量"
   },
+  "信号一般": {
+    "en": "Fair signal",
+    "zh-Hans": "信号一般",
+    "zh-Hant": "訊號一般",
+    "ja": "電波普通",
+    "ko": "신호 보통"
+  },
   "信号与锁频": {
     "en": "Signal & bands",
     "zh-Hans": "信号与锁频",
@@ -2379,6 +2400,13 @@
     "ja": "電波強度",
     "ko": "신호 강도"
   },
+  "信号良好": {
+    "en": "Good signal",
+    "zh-Hans": "信号良好",
+    "zh-Hant": "訊號良好",
+    "ja": "電波良好",
+    "ko": "신호 양호"
+  },
   "信号详情": {
     "zh-Hans": "信号详情",
     "zh-Hant": "訊號詳情",
@@ -2392,6 +2420,13 @@
     "zh-Hant": "訊號質量檢測",
     "ja": "電波品質テスト",
     "ko": "신호 품질 검사"
+  },
+  "信号较弱": {
+    "en": "Weak signal",
+    "zh-Hans": "信号较弱",
+    "zh-Hant": "訊號較弱",
+    "ja": "電波が弱い",
+    "ko": "신호 약함"
   },
   "信号通过实时订阅更新。网络授予速率不等于实际测速结果。": {
     "en": "Signals are updated via subscription in real time. The network's assigned speed is not equal to the actual measurement results.",
@@ -9624,6 +9659,13 @@
     "ja": "色を指定",
     "ko": "사용자 지정 색상"
   },
+  "良好": {
+    "en": "Good",
+    "zh-Hans": "良好",
+    "zh-Hant": "良好",
+    "ja": "良好",
+    "ko": "양호"
+  },
   "节点名称": {
     "en": "Node name",
     "zh-Hans": "节点名称",
@@ -10716,12 +10758,26 @@
     "ja": "キャリア,細胞およびラジオ診断",
     "ko": "운반기, 세포 및 전파 진단"
   },
+  "载波数": {
+    "en": "Carriers",
+    "zh-Hans": "载波数",
+    "zh-Hant": "載波數",
+    "ja": "キャリア数",
+    "ko": "반송파 수"
+  },
   "载波聚合": {
     "en": "Carrier aggregation",
     "zh-Hans": "载波聚合",
     "zh-Hant": "載波聚合",
     "ja": "キャリアアグリゲーション",
     "ko": "반송파 집성"
+  },
+  "较弱": {
+    "en": "Weak",
+    "zh-Hans": "较弱",
+    "zh-Hant": "較弱",
+    "ja": "弱い",
+    "ko": "약함"
   },
   "辅载波": {
     "en": "Secondary carrier",

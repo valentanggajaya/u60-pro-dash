@@ -35,14 +35,32 @@ msgstr "↓ 下載 / Mbps"
 msgid "−2 分钟"
 msgstr "−2 分鐘"
 
+msgid "一般"
+msgstr "一般"
+
+msgid "二维码"
+msgstr "QR 碼"
+
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "優先回應與處理能力，溫度與功耗可能上升。"
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "保留 Wi-Fi、USB 與本機管理"
 
+msgid "信号"
+msgstr "訊號"
+
+msgid "信号一般"
+msgstr "訊號一般"
+
+msgid "信号良好"
+msgstr "訊號良好"
+
 msgid "信号详情"
 msgstr "訊號詳情"
+
+msgid "信号较弱"
+msgstr "訊號較弱"
 
 msgid "修改解锁密码"
 msgstr "修改解鎖密碼"
@@ -91,6 +109,9 @@ msgstr "子網路由與連通性檢測"
 
 msgid "完成"
 msgstr "完成"
+
+msgid "密码"
+msgstr "密碼"
 
 msgid "密码解锁"
 msgstr "密碼解鎖"
@@ -275,6 +296,9 @@ msgstr "自動熄屏"
 msgid "自定义颜色"
 msgstr "自定義顏色"
 
+msgid "良好"
+msgstr "良好"
+
 msgid "蜂窝恢复后继续使用所选带宽策略。"
 msgstr "行動網路恢復後繼續使用所選頻寬策略。"
 
@@ -292,6 +316,12 @@ msgstr "設定解鎖密碼"
 
 msgid "跟随系统"
 msgstr "跟隨系統"
+
+msgid "载波数"
+msgstr "載波數"
+
+msgid "较弱"
+msgstr "較弱"
 
 msgid "输入 "
 msgstr "輸入 "

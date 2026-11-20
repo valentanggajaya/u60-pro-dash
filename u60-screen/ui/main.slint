@@ -3,7 +3,6 @@ import { LockScreen, PinPad } from "lock.slint";
 import { TextEditor } from "editor.slint";
 import { StatusBar } from "status.slint";
 import { ModeSummary, OperatingControls } from "operating.slint";
-import { WifiCard } from "wifi.slint";
 import { Reading, Trend, TrendPlot, Meter, DataRow, ReadingTable, TrendCard, MeterGrid, DataTable } from "data.slint";
 import "../assets/U60Sans.ttf";
 import "../assets/U60Hangul.ttf";
@@ -116,6 +115,16 @@ export component Screen inherits Window {
     in-out property <string> network-mode: "5G";
     in-out property <string> radio-label: "5G SA · n78";
     in-out property <string> signal-strength: "−86";
+    in-out property <string> signal-sinr: "12";
+    in-out property <string> signal-bands: "n41 + n1";
+    in-out property <string> signal-carriers: "2";
+    // 0 = unknown, 1 = weak, 2 = fair, 3 = good.
+    in-out property <int> rsrp-level: 3;
+    in-out property <int> sinr-level: 2;
+    in-out property <int> signal-quality: 2;
+    pure function level-color(level: int) -> color {
+        return level >= 3 ? Palette.good : level == 2 ? Palette.warning : level == 1 ? Palette.bad : Palette.text;
+    }
     in-out property <string> client-count: "3";
     in-out property <string> traffic-total: "2.38 GB";
     in-out property <string> tailnet-status: @tr("已连接");
@@ -279,76 +288,120 @@ export component Screen inherits Window {
             content := VerticalLayout {
                 x: 0px; y: 0px; width: scroll.width; height: max(self.min-height, self.preferred-height);
                 padding-left: 12px; padding-right: 12px; padding-top: 2px; padding-bottom: 12px; spacing: root.view == 0 ? 8px : 10px;
+                // Home: big speeds, a colour-coded signal card, three metrics,
+                // one Wi-Fi row (tap for the large QR) and the service dots.
+                // Text is at least 13 px so it reads at arm length.
                 if root.view == 0: Rectangle {
-                    height: root.home-show-radio ? 102px : 80px;
+                    height: 80px;
                     Rectangle { x: 0px; y: 0px; width: parent.width; height: 1px; background: Palette.line; }
                     HorizontalLayout {
-                        y: 16px; height: 64px; spacing: 16px;
+                        y: 10px; height: 66px; spacing: 16px;
                         VerticalLayout {
-                            Label { text: @tr("↓ 下载 / Mbps"); font-size: 12px; color: Palette.muted; }
-                            Label { text: root.download; height: 42px; font-size: 32px; font-weight: 650; color: Palette.accent-ink; }
+                            Label { text: @tr("↓ 下载 / Mbps"); height: 20px; font-size: 13px; color: Palette.muted; }
+                            Label { text: root.download; height: 46px; font-size: 34px; font-weight: 650; color: Palette.accent-ink; }
                         }
                         VerticalLayout {
-                            Label { text: @tr("↑ 上传 / Mbps"); font-size: 12px; color: Palette.muted; }
-                            Label { text: root.upload; height: 42px; font-size: 32px; font-weight: 650; }
+                            Label { text: @tr("↑ 上传 / Mbps"); height: 20px; font-size: 13px; color: Palette.muted; }
+                            Label { text: root.upload; height: 46px; font-size: 34px; font-weight: 650; }
                         }
                     }
                     TouchArea { clicked => { root.open("traffic"); } }
-                    if root.home-show-radio: Rectangle {
-                        y: 82px; height: 22px;
-                        HorizontalLayout {
-                            Label { text: root.radio-label; font-size: 12px; color: Palette.muted; }
-                            Label { text: root.signal-strength + " dBm"; font-size: 12px; horizontal-alignment: right; color: Palette.muted; }
-                        }
-                        TouchArea { clicked => { root.open("signal-live"); } }
+                }
+                if root.view == 0 && root.home-show-radio: GlassPanel {
+                    translucent: true; height: 108px;
+                    Label {
+                        x: 12px; y: 8px; width: 140px; height: 24px;
+                        text: @tr("信号"); font-size: 14px; font-weight: 650; color: Palette.muted; vertical-alignment: center;
                     }
+                    if root.signal-quality > 0: Rectangle {
+                        x: parent.width - self.width - 10px; y: 8px; height: 24px;
+                        width: quality-text.preferred-width + 32px; border-radius: 12px;
+                        background: root.level-color(root.signal-quality).with-alpha(0.16);
+                        Rectangle { x: 11px; y: 8px; width: 8px; height: 8px; border-radius: 4px; background: root.level-color(root.signal-quality); }
+                        quality-text := Label {
+                            x: 24px; y: 0px; width: self.preferred-width; height: parent.height;
+                            text: root.signal-quality >= 3 ? @tr("良好") : root.signal-quality == 2 ? @tr("一般") : @tr("较弱");
+                            font-size: 13px; font-weight: 650; color: root.level-color(root.signal-quality); vertical-alignment: center;
+                        }
+                    }
+                    HorizontalLayout {
+                        x: 12px; y: 36px; width: parent.width - 24px; height: 46px; spacing: 8px;
+                        for reading in [
+                            { title: "RSRP", value: root.signal-strength, unit: "dBm", level: root.rsrp-level },
+                            { title: "SINR", value: root.signal-sinr, unit: "dB", level: root.sinr-level },
+                            { title: @tr("载波数"), value: root.signal-carriers, unit: "", level: 0 }
+                        ]: VerticalLayout {
+                            horizontal-stretch: 1; min-width: 0px;
+                            Label { text: reading.title; height: 18px; font-size: 13px; color: Palette.muted; }
+                            HorizontalLayout {
+                                height: 28px; spacing: 3px; alignment: start;
+                                Label { text: reading.value; font-size: 23px; font-weight: 650; color: root.level-color(reading.level); vertical-alignment: bottom; }
+                                if reading.unit != "": Label { text: reading.unit; font-size: 12px; color: Palette.muted; vertical-alignment: bottom; }
+                            }
+                        }
+                    }
+                    Label {
+                        x: 12px; y: 84px; width: parent.width - 40px; height: 20px;
+                        text: root.signal-bands != "" ? root.network-mode + " · " + root.signal-bands : root.radio-label;
+                        font-size: 14px; vertical-alignment: center;
+                    }
+                    Label { x: parent.width - 22px; y: 82px; width: 12px; height: 22px; text: "›"; font-size: 20px; color: Palette.accent-ink; vertical-alignment: center; }
+                    TouchArea { clicked => { root.open("signal-live"); } }
                 }
                 if root.view == 0 && root.home-metrics.length > 0: Rectangle {
-                    height: 56px;
-                    Rectangle { x: 0px; y: 0px; height: 1px; width: parent.width; background: Palette.line; }
+                    height: 54px;
                     HorizontalLayout {
-                        y: 8px; height: 48px; spacing: 10px;
+                        y: 2px; height: 52px; spacing: 8px;
                         for metric in root.home-metrics: Rectangle {
                             horizontal-stretch: 1; min-width: 0px;
                             VerticalLayout {
-                                Label { text: metric.title; height: 18px; font-size: 12px; color: Palette.muted; }
-                                Label { text: metric.subtitle; height: 28px; font-size: 19px; font-weight: 650; }
+                                Label { text: metric.title; height: 20px; font-size: 13px; color: Palette.muted; }
+                                Label { text: metric.subtitle; height: 30px; font-size: 21px; font-weight: 650; }
                             }
                             TouchArea { clicked => { root.open(metric.tag == "clients" ? "clients" : metric.tag == "month" ? "usage" : metric.tag == "battery" ? "battery-details" : "resources"); } }
                         }
                     }
                 }
-                if root.view == 0 && root.home-show-wifi: WifiCard {
-                    qr: root.home-wifi-qr; ready: root.home-wifi-ready;
-                    ssid: root.home-wifi-name; band: root.home-wifi-band;
-                    password: root.home-wifi-key; protected: root.home-wifi-protected;
-                    revealed: root.home-wifi-revealed; switchable: root.home-wifi-switchable;
-                    message: root.home-wifi-message;
-                    expand => { root.wifi-expand(); }
-                    toggle-password => { root.wifi-toggle-password(); }
-                    switch-band => { root.wifi-switch-band(); }
+                if root.view == 0 && root.home-show-wifi: GlassPanel {
+                    translucent: true; height: 58px;
+                    Path {
+                        x: 12px; y: 19px; width: 22px; height: 18px; viewbox-width: 24; viewbox-height: 20;
+                        commands: "M 2 7 Q 12 -2 22 7 M 5.5 10.8 Q 12 5 18.5 10.8 M 9 14.5 Q 12 12 15 14.5 M 12 18.2 L 12 18.3";
+                        stroke: Palette.accent-ink; stroke-width: 2.2px; stroke-line-cap: round; fill: transparent;
+                    }
+                    Label {
+                        x: 44px; y: 8px; width: parent.width - 148px; height: 24px;
+                        text: root.home-wifi-ready ? root.home-wifi-name : root.home-wifi-message;
+                        font-size: 15px; font-weight: 600; vertical-alignment: center;
+                    }
+                    Label { x: 44px; y: 32px; width: parent.width - 148px; height: 18px; text: root.home-wifi-band; font-size: 13px; color: Palette.muted; vertical-alignment: center; }
+                    Rectangle {
+                        x: parent.width - 96px; y: 9px; width: 86px; height: 40px; border-radius: 10px;
+                        background: Palette.accent.with-alpha(0.16); visible: root.home-wifi-ready;
+                        Label { width: parent.width; height: parent.height; text: @tr("二维码") + " ›"; font-size: 14px; font-weight: 650; color: Palette.accent-ink; horizontal-alignment: center; vertical-alignment: center; }
+                    }
+                    TouchArea { enabled: root.home-wifi-ready; accessible-role: button; accessible-label: @tr("放大连接二维码"); clicked => { root.wifi-expand(); } }
                 }
                 if root.view == 0 && root.home-show-services && root.home-services.length > 0: HorizontalLayout {
-                    height: 28px; spacing: 4px;
+                    height: 30px; spacing: 4px;
                     for service in root.home-services: Rectangle {
                         horizontal-stretch: 1; min-width: 0px;
                         Rectangle {
-                            x: 1px; y: 12px; width: 4px; height: 4px; border-radius: 2px;
+                            x: 1px; y: 11px; width: 8px; height: 8px; border-radius: 4px;
                             background: service.tag == "on" ? Palette.good : service.tag == "attention" ? Palette.warning : service.tag == "off" ? transparent : Palette.muted;
                             border-width: service.tag == "off" ? 1px : 0px; border-color: Palette.muted;
                         }
-                        Label { x: 10px; width: parent.width - 12px; text: service.title; font-size: 12px; vertical-alignment: center; color: Palette.muted; }
+                        Label { x: 14px; width: parent.width - 16px; text: service.title; font-size: 13px; vertical-alignment: center; }
                         TouchArea {
                             accessible-role: button; accessible-label: service.title + " · " + service.subtitle;
                             clicked => { root.open(service.id); }
                         }
                     }
                 }
-                if root.view == 0: Rectangle { height: 16px; }
                 if root.view == 0: HorizontalLayout {
-                    height: 34px; spacing: 12px;
+                    height: 40px; spacing: 12px;
                     for link in [{title: @tr("流量套餐"), id: "usage"}, {title: @tr("连接记录"), id: "history"}]: Rectangle {
-                        Label { text: link.title + " ›"; font-size: 12px; color: Palette.accent-ink; vertical-alignment: center; }
+                        Label { text: link.title + " ›"; font-size: 14px; color: Palette.accent-ink; vertical-alignment: center; }
                         TouchArea { clicked => { root.open(link.id); } }
                     }
                 }
@@ -544,10 +597,46 @@ export component Screen inherits Window {
         if root.wifi-expanded && root.home-wifi-ready: AmbientBackground {
             y: 28px; width: parent.width; height: parent.height - 28px;
             TouchArea { }
-            Label { x: 16px; y: 12px; width: 288px; height: 48px; text: root.home-wifi-name; font-size: 18px; font-weight: 600; wrap: char-wrap; horizontal-alignment: center; vertical-alignment: center; }
-            Label { x: 16px; y: 65px; width: 288px; text: root.home-wifi-band; font-size: 13px; color: Palette.muted; horizontal-alignment: center; }
-            Image { x: 32px; y: 96px; width: 256px; height: 256px; source: root.home-wifi-qr-large; image-fit: contain; }
-            TapButton { x: 16px; y: 392px; width: 288px; height: 44px; text: @tr("返回"); clicked => { root.wifi-close(); } }
+            Label { x: 16px; y: 4px; width: 288px; height: 40px; text: root.home-wifi-name; font-size: 18px; font-weight: 600; wrap: char-wrap; horizontal-alignment: center; vertical-alignment: center; }
+            // The home Wi-Fi row is a single line now, so band switching and
+            // the password live here, next to the large QR.
+            Rectangle {
+                x: 16px; y: 44px; width: 288px; height: 30px;
+                Label {
+                    width: parent.width; height: parent.height;
+                    text: root.home-wifi-band + (root.home-wifi-switchable ? "  ›" : "");
+                    font-size: 14px; color: root.home-wifi-switchable ? Palette.accent-ink : Palette.muted;
+                    horizontal-alignment: center; vertical-alignment: center;
+                }
+                TouchArea {
+                    y: -7px; height: 44px; enabled: root.home-wifi-switchable;
+                    accessible-role: button; accessible-label: @tr("切换 Wi-Fi 频段");
+                    clicked => { root.wifi-switch-band(); }
+                }
+            }
+            Image { x: 40px; y: 80px; width: 240px; height: 240px; source: root.home-wifi-qr-large; image-fit: contain; }
+            if root.home-wifi-protected: Rectangle {
+                x: 16px; y: 330px; width: 288px; height: 48px; border-radius: 10px; background: Palette.surface;
+                Label {
+                    x: 12px; width: parent.width - 68px; height: parent.height;
+                    text: @tr("密码") + "  " + (root.home-wifi-revealed ? root.home-wifi-key : "********");
+                    font-size: 15px; vertical-alignment: center;
+                }
+                Path {
+                    x: parent.width - 40px; y: 16px; width: 24px; height: 16px;
+                    commands: "M 1 8 Q 12 -5 23 8 Q 12 21 1 8 Z M 15 8 A 3 3 0 1 1 9 8 A 3 3 0 1 1 15 8";
+                    stroke: Palette.accent-ink; stroke-width: 1.5px;
+                }
+                if !root.home-wifi-revealed: Path {
+                    x: parent.width - 40px; y: 12px; width: 24px; height: 24px;
+                    commands: "M 2 2 L 22 22"; stroke: Palette.accent-ink; stroke-width: 1.5px;
+                }
+                TouchArea {
+                    accessible-role: button; accessible-label: root.home-wifi-revealed ? @tr("隐藏密码") : @tr("显示密码");
+                    clicked => { root.wifi-toggle-password(); }
+                }
+            }
+            TapButton { x: 16px; y: 396px; width: 288px; height: 44px; text: @tr("返回"); clicked => { root.wifi-close(); } }
         }
         if root.choice-visible: AmbientBackground {
             width: parent.width; height: parent.height;
@@ -619,7 +708,7 @@ export component Screen inherits Window {
             pin-enabled: root.pin-enabled; awake: !root.asleep; progress: root.hold-progress;
             clock: root.lock-clock; date: root.lock-date;
             download-path: root.lock-download-path; upload-path: root.lock-upload-path; samples: root.lock-samples;
-            battery: root.battery; network-online: root.network-online;
+            battery: root.battery; network-online: root.network-online; signal-quality: root.signal-quality;
             battery-level: root.battery-level; charging: root.charging;
             external-power: root.external-power; bypass-power: root.bypass-power; power-label: root.power-label;
             network-badge: root.network-badge; signal-level: root.signal-level;

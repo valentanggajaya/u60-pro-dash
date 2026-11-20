@@ -111,10 +111,97 @@ pub struct Dashboard {
     pub signal_level: i32,
     pub radio: String,
     pub rsrp: String,
+    /// SINR of the serving cell (NR when NR has an RSRP, else LTE).
+    pub sinr: String,
+    /// 0 = unknown, 1 = weak, 2 = fair, 3 = good.
+    pub rsrp_level: i32,
+    pub sinr_level: i32,
+    /// The worse of the known RSRP and SINR levels, 0 when neither is known.
+    pub quality: i32,
+    /// Bands of every component carrier in use, primary first ("n41 + n1").
+    pub bands: String,
+    /// Number of component carriers in use, "—" when unknown.
+    pub carriers: String,
     pub online: bool,
     pub download: String,
     pub upload: String,
     pub total: String,
+}
+
+fn rsrp_level(dbm: f64) -> i32 {
+    if dbm >= -90. {
+        3
+    } else if dbm >= -105. {
+        2
+    } else {
+        1
+    }
+}
+
+fn sinr_level(db: f64) -> i32 {
+    if db >= 13. {
+        3
+    } else if db >= 0. {
+        2
+    } else {
+        1
+    }
+}
+
+/// A band number from firmware text ("n78", "78", "NR5G BAND 78", "B3").
+fn band_number(raw: &str) -> Option<u32> {
+    const PREFIXES: [&str; 8] = ["NR5G", "LTE", "BAND", "NR", "5G", "4G", "B", "N"];
+    let sep = |c: char| c.is_whitespace() || matches!(c, ':' | '_' | '-');
+    let upper = raw.to_ascii_uppercase();
+    let mut v = upper.trim_matches(sep);
+    while let Some(p) = PREFIXES.iter().find(|p| v.starts_with(**p)) {
+        v = v[p.len()..].trim_matches(sep);
+    }
+    if v.is_empty() || !v.bytes().all(|c| c.is_ascii_digit()) {
+        return None;
+    }
+    v.parse().ok().filter(|n| *n > 0)
+}
+
+/// Bands of the distinct component carriers (PCI, band, channel) of one RAT:
+/// the serving cell first, then the firmware's CA list ("PCI,Band,Index,
+/// Channel,BW;…"), skipping placeholder rows and repeats. Same rules as the
+/// agent's signal page.
+fn component_bands(signal: &Value, nr: bool) -> Vec<String> {
+    let (list, pci, band, channel, prefix) = if nr {
+        ("nrca", "nr5g_pci", "nr5g_action_band", "nr5g_action_channel", "n")
+    } else {
+        ("lteca", "lte_pci", "wan_active_band", "wan_active_channel", "B")
+    };
+    let max_pci = if nr { 1007 } else { 503 };
+    let key = |p: &str, b: &str, c: &str| {
+        let p = p.trim().parse::<u32>().ok().filter(|p| *p <= max_pci)?;
+        Some((p, band_number(b)?, c.trim().parse::<u32>().ok()?))
+    };
+    let mut seen = Vec::new();
+    let primary = key(
+        text(&signal[pci]).as_str(),
+        text(&signal[band]).as_str(),
+        text(&signal[channel]).as_str(),
+    );
+    seen.extend(primary);
+    if nr || text(&signal["lteca_state"]) != "0" {
+        for entry in text(&signal[list]).split(';') {
+            let p: Vec<&str> = entry.split(',').map(str::trim).collect();
+            if p.len() < 5 || (p[0] == "0" && p[3] == "0") {
+                continue;
+            }
+            if let Some(k) = key(p[0], p[1], p[3]).filter(|k| !seen.contains(k)) {
+                seen.push(k);
+            }
+        }
+    }
+    if seen.is_empty() {
+        return band_number(&text(&signal[band]))
+            .map(|b| vec![format!("{prefix}{b}")])
+            .unwrap_or_default();
+    }
+    seen.into_iter().map(|(_, b, _)| format!("{prefix}{b}")).collect()
 }
 impl Dashboard {
     pub fn read(state: &Snapshot) -> Self {
@@ -197,8 +284,30 @@ impl Dashboard {
                 .map(|v| format!("{:.1}", v * 8. / 1e6))
                 .unwrap_or("—".into())
         };
+        let sinr = measured.and_then(|_| {
+            number(&signal[if nr.is_some() { "nr5g_snr" } else { "lte_snr" }])
+                .filter(|v| (-30.0..=60.0).contains(v))
+        });
+        let rsrp_lv = measured.map_or(0, rsrp_level);
+        let sinr_lv = sinr.map_or(0, sinr_level);
+        let mut bands = Vec::new();
+        if measured.is_some() {
+            // EN-DC: the LTE anchor's carriers, then NR's. SA: NR only.
+            if lte.is_some() && network != "5G SA" {
+                bands.extend(component_bands(signal, false));
+            }
+            if nr.is_some() {
+                bands.extend(component_bands(signal, true));
+            }
+        }
         let capacity = number(&battery["capacity"]).filter(|v| (0.0..=100.0).contains(v));
         Self {
+            sinr: sinr.map(|v| format!("{v:.0}")).unwrap_or("—".into()),
+            rsrp_level: rsrp_lv,
+            sinr_level: sinr_lv,
+            quality: [rsrp_lv, sinr_lv].into_iter().filter(|l| *l > 0).min().unwrap_or(0),
+            carriers: if bands.is_empty() { "—".into() } else { bands.len().to_string() },
+            bands: bands.join(" + "),
             battery: capacity.map(|v| format!("{v:.0}%")).unwrap_or("—".into()),
             battery_level: capacity.map_or(-1, |v| v.round() as i32),
             power: Power::read(battery, charger),
@@ -400,6 +509,39 @@ mod tests {
         assert_eq!(model.signal_level, -1);
         assert_eq!(model.battery_level, -1);
         assert_eq!(model.power, Power::Unknown);
+    }
+    #[test]
+    fn signal_card_counts_carriers_and_grades_the_worse_reading() {
+        let mut state = Snapshot {
+            status: Status::Live,
+            packet_at: Some(std::time::Instant::now()),
+            ..Default::default()
+        };
+        let mut read = |data: Value| {
+            state.values.insert(
+                "signal".into(),
+                Sample { data, age_ms: 0, seq: 1, failed: false },
+            );
+            Dashboard::read(&state)
+        };
+        // SA with one NR secondary; the primary repeated in the list and a
+        // placeholder row do not count.
+        let m = read(json!({"network_type":"SA","nr5g_rsrp":-86,"nr5g_snr":"-23",
+            "nr5g_pci":"512","nr5g_action_band":"n41","nr5g_action_channel":"513000",
+            "nrca":"512,41,0,513000,100;300,1,1,428000,20;0,0,0,0,0;",
+            "lte_rsrp":-90,"lteca":"1,3,0,1650,20"}));
+        assert_eq!((m.bands.as_str(), m.carriers.as_str()), ("n41 + n1", "2"));
+        assert_eq!((m.sinr.as_str(), m.rsrp_level, m.sinr_level, m.quality), ("-23", 3, 1, 1));
+        // EN-DC: LTE anchor (CA off) then NR.
+        let m = read(json!({"network_type":"ENDC","lte_rsrp":-100,"lte_snr":5,
+            "lte_pci":"10","wan_active_band":"B3","wan_active_channel":"1650",
+            "lteca_state":"0","lteca":"10,3,0,1650,20;11,1,1,300,10",
+            "nr5g_rsrp":-95,"nr5g_snr":15,"nr5g_action_band":"78"}));
+        assert_eq!((m.bands.as_str(), m.carriers.as_str()), ("B3 + n78", "2"));
+        assert_eq!((m.rsrp_level, m.sinr_level, m.quality), (2, 3, 2));
+        // No service hides everything.
+        let m = read(json!({"network_type":"NO_SERVICE","nr5g_rsrp":-80,"nr5g_snr":20}));
+        assert_eq!((m.bands.as_str(), m.carriers.as_str(), m.sinr.as_str(), m.quality), ("", "—", "—", 0));
     }
     #[test]
     fn live_values_handle_units_unknowns_failed_reads_and_stale_snapshots() {

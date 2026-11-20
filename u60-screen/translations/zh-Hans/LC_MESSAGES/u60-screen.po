@@ -35,14 +35,32 @@ msgstr "↓ 下载 / Mbps"
 msgid "−2 分钟"
 msgstr "−2 分钟"
 
+msgid "一般"
+msgstr "一般"
+
+msgid "二维码"
+msgstr "二维码"
+
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "优先响应与处理能力，温度和功耗可能上升。"
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "保留 Wi-Fi、USB 与本地管理"
 
+msgid "信号"
+msgstr "信号"
+
+msgid "信号一般"
+msgstr "信号一般"
+
+msgid "信号良好"
+msgstr "信号良好"
+
 msgid "信号详情"
 msgstr "信号详情"
+
+msgid "信号较弱"
+msgstr "信号较弱"
 
 msgid "修改解锁密码"
 msgstr "修改解锁密码"
@@ -91,6 +109,9 @@ msgstr "子网路由与连通性检测"
 
 msgid "完成"
 msgstr "完成"
+
+msgid "密码"
+msgstr "密码"
 
 msgid "密码解锁"
 msgstr "密码解锁"
@@ -275,6 +296,9 @@ msgstr "自动熄屏"
 msgid "自定义颜色"
 msgstr "自定义颜色"
 
+msgid "良好"
+msgstr "良好"
+
 msgid "蜂窝恢复后继续使用所选带宽策略。"
 msgstr "蜂窝恢复后继续使用所选带宽策略。"
 
@@ -292,6 +316,12 @@ msgstr "设置解锁密码"
 
 msgid "跟随系统"
 msgstr "跟随系统"
+
+msgid "载波数"
+msgstr "载波数"
+
+msgid "较弱"
+msgstr "较弱"
 
 msgid "输入 "
 msgstr "输入 "

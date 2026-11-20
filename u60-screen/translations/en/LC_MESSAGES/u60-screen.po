@@ -35,14 +35,32 @@ msgstr "↓ Download / Mbps"
 msgid "−2 分钟"
 msgstr "−2 min"
 
+msgid "一般"
+msgstr "Fair"
+
+msgid "二维码"
+msgstr "QR code"
+
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "Prioritize responsiveness; heat and power use may increase."
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "Keep Wi-Fi, USB and local access"
 
+msgid "信号"
+msgstr "Signal"
+
+msgid "信号一般"
+msgstr "Fair signal"
+
+msgid "信号良好"
+msgstr "Good signal"
+
 msgid "信号详情"
 msgstr "Radio details"
+
+msgid "信号较弱"
+msgstr "Weak signal"
 
 msgid "修改解锁密码"
 msgstr "Change unlock PIN"
@@ -91,6 +109,9 @@ msgstr "Subnet connectivity"
 
 msgid "完成"
 msgstr "Done"
+
+msgid "密码"
+msgstr "Password"
 
 msgid "密码解锁"
 msgstr "PIN unlock"
@@ -275,6 +296,9 @@ msgstr "Automatic sleep"
 msgid "自定义颜色"
 msgstr "Custom color"
 
+msgid "良好"
+msgstr "Good"
+
 msgid "蜂窝恢复后继续使用所选带宽策略。"
 msgstr "Mobile radio is off. Your bandwidth choice is retained."
 
@@ -292,6 +316,12 @@ msgstr "Set unlock PIN"
 
 msgid "跟随系统"
 msgstr "System theme"
+
+msgid "载波数"
+msgstr "Carriers"
+
+msgid "较弱"
+msgstr "Weak"
 
 msgid "输入 "
 msgstr "Enter "

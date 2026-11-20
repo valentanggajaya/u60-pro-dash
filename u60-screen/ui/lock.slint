@@ -27,6 +27,8 @@ export component LockScreen inherits AmbientBackground {
     in property <string> carrier-label;
     in property <string> client-count;
     in property <bool> network-online;
+    // 0 = unknown, 1 = weak, 2 = fair, 3 = good.
+    in property <int> signal-quality;
     in property <string> download;
     in property <string> upload;
     in property <string> download-path;
@@ -87,15 +89,29 @@ export component LockScreen inherits AmbientBackground {
         thermal: root.thermal; rail: root.rail;
     }
     HorizontalLayout {
-        x: 24px; y: 173px; width: parent.width - 48px; height: 22px; spacing: 5px;
-        Label { text: root.airplane ? @tr("蜂窝网络已关闭") : root.carrier-label + " · " + root.network-mode; min-width: 0px; font-size: 12px; vertical-alignment: center; }
+        x: 24px; y: 171px; width: parent.width - 48px; height: 24px; spacing: 6px;
+        Label { text: root.airplane ? @tr("蜂窝网络已关闭") : root.carrier-label + " · " + root.network-mode; min-width: 0px; font-size: 13px; vertical-alignment: center; }
+        // Signal quality as a coloured dot and word (good / fair / weak) when
+        // known; otherwise the plain online state as before.
         Rectangle {
-            width: 4px;
-            Rectangle { y: 9px; width: 4px; height: 4px; border-radius: 2px; background: root.network-online ? Palette.good : Palette.warning; }
+            width: 8px;
+            Rectangle {
+                y: 8px; width: 8px; height: 8px; border-radius: 4px;
+                background: root.network-online && root.signal-quality >= 3 ? Palette.good
+                    : root.network-online && root.signal-quality == 2 ? Palette.warning
+                    : root.network-online && root.signal-quality == 1 ? Palette.bad
+                    : root.network-online ? Palette.good : Palette.warning;
+            }
         }
         Label {
-            text: root.airplane && root.wifi-enabled ? @tr("Wi-Fi 可用") : root.network-online ? @tr("已联网") : @tr("未联网"); width: self.preferred-width;
-            font-size: 12px; color: Palette.muted; vertical-alignment: center;
+            text: root.airplane && root.wifi-enabled ? @tr("Wi-Fi 可用")
+                : !root.network-online ? @tr("未联网")
+                : root.signal-quality >= 3 ? @tr("信号良好")
+                : root.signal-quality == 2 ? @tr("信号一般")
+                : root.signal-quality == 1 ? @tr("信号较弱")
+                : @tr("已联网");
+            width: self.preferred-width;
+            font-size: 13px; color: Palette.muted; vertical-alignment: center;
         }
     }
     HorizontalLayout {
@@ -131,7 +147,7 @@ export component LockScreen inherits AmbientBackground {
     Label {
         x: 16px; y: 332px; width: parent.width - 32px; height: 22px;
         text: @tr("{0} 台设备", root.client-count) + " · " + root.battery + " · " + root.power-label;
-        color: Palette.muted; font-size: 12px; horizontal-alignment: center; vertical-alignment: center;
+        color: Palette.muted; font-size: 13px; horizontal-alignment: center; vertical-alignment: center;
     }
     // A small visual control with a larger finger target. It remains a hold
     // gesture; fingerprint artwork does not add biometric authentication.
