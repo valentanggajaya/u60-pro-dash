@@ -36,11 +36,32 @@ export component LockScreen inherits AmbientBackground {
     callback hold-tick;
     callback hold-end(bool);
     callback hold-cancel;
-    // Double-tapping the status bar turns the screen off (same as a short
-    // power-key press), so the physical key is not needed every time.
+    // A double tap anywhere on the lock screen (status bar included) turns the
+    // screen off, same as a short power-key press, so the physical key is not
+    // needed every time. The unlock button keeps its own touch area.
     callback sleep-now;
     background: Palette.bg;
-    TouchArea { }
+    // Bottom layer: still blocks touches from reaching the home page beneath.
+    // Labels, charts and the (non-interactive) mode summary take no touches, so
+    // their taps land here. One tap does nothing; a second one within 400 ms
+    // turns the screen off.
+    lock-tap-window := Timer {
+        interval: 400ms;
+        running: false;
+        triggered => { self.running = false; }
+    }
+    TouchArea {
+        clicked => {
+            if root.awake {
+                if lock-tap-window.running {
+                    lock-tap-window.running = false;
+                    root.sleep-now();
+                } else {
+                    lock-tap-window.running = true;
+                }
+            }
+        }
+    }
     StatusBar {
         x: 0px; y: 0px; width: parent.width; awake: root.awake; locked: true;
         double-tap-enabled: root.awake;
