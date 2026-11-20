@@ -238,6 +238,17 @@ impl State {
                         entry(&f.id, &f.title, &f.description, ""),
                     );
                 }
+                // Manage opens as the settings board; its groups follow
+                // under "All settings".
+                if id == "manage" {
+                    view = 8;
+                }
+            }
+            "wifi-repeater" => {
+                // Preview only: no repeater API in the agent yet.
+                title = crate::i18n::tr("Wi-Fi 中继").into();
+                view = 9;
+                tab = 1;
             }
             "screen-lock" => {
                 title = crate::i18n::tr("锁屏与密码").into();
@@ -708,14 +719,15 @@ impl State {
         }
         if !ui.get_asleep()
             && !self.security.locked
-            && ui.get_view() == 0
-            && [
-                &self.prefs.home.metric_1,
-                &self.prefs.home.metric_2,
-                &self.prefs.home.metric_3,
-            ]
-            .iter()
-            .any(|v| matches!(v.as_str(), "cpu" | "temperature"))
+            && (ui.get_view() == 8
+                || ui.get_view() == 0
+                    && [
+                        &self.prefs.home.metric_1,
+                        &self.prefs.home.metric_2,
+                        &self.prefs.home.metric_3,
+                    ]
+                    .iter()
+                    .any(|v| matches!(v.as_str(), "cpu" | "temperature")))
         {
             topics.push("health".into());
         }
@@ -848,7 +860,7 @@ impl State {
             !ui.get_asleep()
                 && snapshot.authenticated
                 && snapshot.status == crate::agent::Status::Live
-                && (self.security.locked || (active && ui.get_view() == 0)),
+                && (self.security.locked || (active && matches!(ui.get_view(), 0 | 8))),
             &self.prefs.home,
             &snapshot,
         );

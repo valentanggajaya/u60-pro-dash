@@ -41,6 +41,15 @@ msgstr "−2 分"
 msgid "上滑解锁"
 msgstr "上にスワイプで解除"
 
+msgid "下载与上传"
+msgstr "ダウンロードとアップロード"
+
+msgid "中继"
+msgstr "中継"
+
+msgid "中继设置"
+msgstr "中継設定"
+
 msgid "二维码"
 msgstr "QR コード"
 
@@ -49,6 +58,9 @@ msgstr "今日のデータ"
 
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "応答性を優先。温度と消費電力が上がる場合があります。"
+
+msgid "使用 5 GHz"
+msgstr "5 GHz を使用"
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "Wi-Fi、USB、ローカル管理を維持"
@@ -67,6 +79,9 @@ msgstr "電波が弱い"
 
 msgid "修改解锁密码"
 msgstr "解除 PIN を変更"
+
+msgid "全部设置"
+msgstr "すべての設定"
 
 msgid "关机"
 msgstr "電源を切る"
@@ -92,6 +107,9 @@ msgstr "状態を更新"
 msgid "刷新连接状态"
 msgstr "接続状態を更新する"
 
+msgid "反向供电"
+msgstr "リバース充電"
+
 msgid "取消"
 msgstr "キャンセル"
 
@@ -113,11 +131,23 @@ msgstr "バランス"
 msgid "处理中"
 msgstr "処理中"
 
+msgid "外观"
+msgstr "外観"
+
+msgid "夜空壁纸"
+msgstr "夜空の壁紙"
+
 msgid "子网路由与连通性检测"
 msgstr "サブネット接続テスト"
 
 msgid "完成"
 msgstr "完了"
+
+msgid "定时任务"
+msgstr "スケジュール"
+
+msgid "定时重启"
+msgstr "定時再起動"
 
 msgid "密码"
 msgstr "パスワード"
@@ -125,8 +155,14 @@ msgstr "パスワード"
 msgid "密码解锁"
 msgstr "パインロックを解除"
 
+msgid "屏幕"
+msgstr "スクリーン"
+
 msgid "屏幕亮度  "
 msgstr "画面の明るさ  "
+
+msgid "已存的 Wi-Fi"
+msgstr "保存済み Wi-Fi"
 
 msgid "已开启 · 6–12 位数字密码"
 msgstr "有効 · 6～12桁の PIN"
@@ -164,6 +200,15 @@ msgstr "パフォーマンスモード"
 msgid "所选模式尚未生效，请核对设备状态。"
 msgstr "選択したモードは未適用です。端末の状態を確認してください。"
 
+msgid "扫描附近 Wi-Fi"
+msgstr "近くの Wi-Fi を検索"
+
+msgid "扫码"
+msgstr "QRコードをスキャンする"
+
+msgid "把别的 Wi-Fi 当作上网来源，代替 SIM 卡。"
+msgstr "SIM の代わりに別の Wi-Fi をインターネット回線として使います。"
+
 msgid "按需调整，兼顾响应、温度与功耗。"
 msgstr "応答性、温度、消費電力を必要に応じて調整。"
 
@@ -191,6 +236,9 @@ msgstr "パスワードを表示"
 msgid "暂无有效读数"
 msgstr "有効な測定値なし"
 
+msgid "更多设置"
+msgstr "その他の設定"
+
 msgid "服务摘要"
 msgstr "サービス概要"
 
@@ -202,6 +250,9 @@ msgstr "未接続"
 
 msgid "本月流量"
 msgstr "今月の通信量"
+
+msgid "本机"
+msgstr "この端末"
 
 msgid "本次 "
 msgstr "今回 "
@@ -281,6 +332,9 @@ msgstr "省電力"
 msgid "知道了"
 msgstr "わかった"
 
+msgid "短信转发"
+msgstr "SMS 転送"
+
 msgid "确认"
 msgstr "確認"
 
@@ -302,8 +356,20 @@ msgstr "鍵を閉じて"
 msgid "管理"
 msgstr "管理"
 
+msgid "给手机供电"
+msgstr "スマホに給電"
+
+msgid "网络、DNS 与系统"
+msgstr "ネットワーク、DNS、システム"
+
+msgid "网速测试"
+msgstr "速度テスト"
+
 msgid "自动"
 msgstr "自動"
+
+msgid "自动休眠"
+msgstr "自動スリープ"
 
 msgid "自动熄屏"
 msgstr "自動消灯"
@@ -328,6 +394,9 @@ msgstr "解除 PIN を設定"
 
 msgid "跟随系统"
 msgstr "システム設定"
+
+msgid "转发到手机"
+msgstr "スマホへ転送"
 
 msgid "输入 "
 msgstr "入力する"
@@ -356,6 +425,9 @@ msgstr "デバイスを再起動"
 msgid "重新连接"
 msgstr "再接続"
 
+msgid "锁屏密码"
+msgstr "ロックのパスワード"
+
 msgid "降低处理频率，吞吐能力可能下降。"
 msgstr "CPU 周波数を抑制。転送性能が低下する場合があります。"
 
@@ -371,11 +443,17 @@ msgstr "非表示はホームの表示だけに適用されます。サービス
 msgid "隐藏密码"
 msgstr "パスワードを隠す"
 
+msgid "预览：中继需要固件支持，尚未在这台 U60 上确认，目前不能使用。"
+msgstr "プレビュー：中継にはファームウェアの対応が必要で、この U60 ではまだ確認できていないため、現在は使えません。"
+
 msgid "飞行模式"
 msgstr "機内モード"
 
 msgid "首页布局"
 msgstr "ホームのレイアウト"
+
+msgid "高级设置"
+msgstr "詳細設定"
 
 msgid "高铁优化"
 msgstr "高速鉄道向け最適化"

@@ -1112,6 +1112,13 @@
     "ja": "Wi-Fi と LAN",
     "ko": "Wi-Fi 및 LAN"
   },
+  "Wi-Fi 中继": {
+    "en": "Wi-Fi repeater",
+    "zh-Hans": "Wi-Fi 中继",
+    "zh-Hant": "Wi-Fi 中繼",
+    "ja": "Wi-Fi 中継",
+    "ko": "Wi-Fi 중계"
+  },
   "Wi-Fi 可用": {
     "zh-Hans": "Wi-Fi 可用",
     "zh-Hant": "Wi-Fi 可用",
@@ -1532,6 +1539,13 @@
     "ja": "eSIM をダウンロード",
     "ko": "eSIM 다운로드"
   },
+  "下载与上传": {
+    "en": "Download and upload",
+    "zh-Hans": "下载与上传",
+    "zh-Hant": "下載與上傳",
+    "ja": "ダウンロードとアップロード",
+    "ko": "다운로드 및 업로드"
+  },
   "下载可用发行版至备用槽位，使用移动流量。": {
     "en": "Download available distributions to backup slots using mobile traffic.",
     "zh-Hans": "下载可用发行版至备用槽位，使用移动流量。",
@@ -1713,6 +1727,20 @@
     "zh-Hant": "中斷經由 Tailscale 的遠端連線與子網訪問。",
     "ja": "Tailscaleによる遠隔接続からサブネットへのアクセスを断つ.",
     "ko": "Tailscale의 원격 연결을 통해 자네트 접속을 중단합니다."
+  },
+  "中继": {
+    "en": "Repeater",
+    "zh-Hans": "中继",
+    "zh-Hant": "中繼",
+    "ja": "中継",
+    "ko": "중계"
+  },
+  "中继设置": {
+    "en": "Repeater settings",
+    "zh-Hans": "中继设置",
+    "zh-Hant": "中繼設定",
+    "ja": "中継設定",
+    "ko": "중계 설정"
   },
   "为外部设备供电": {
     "en": "Power external devices",
@@ -2063,6 +2091,13 @@
     "zh-Hant": "低電量",
     "ja": "低電池",
     "ko": "낮은 배터리"
+  },
+  "使用 5 GHz": {
+    "en": "Use 5 GHz",
+    "zh-Hans": "使用 5 GHz",
+    "zh-Hant": "使用 5 GHz",
+    "ja": "5 GHz を使用",
+    "ko": "5 GHz 사용"
   },
   "使用 PUK 解锁": {
     "en": "Unlock with PUK",
@@ -2749,6 +2784,13 @@
     "zh-Hant": "全部簡訊",
     "ja": "すべてのメッセージ",
     "ko": "모든 메시지"
+  },
+  "全部设置": {
+    "en": "All settings",
+    "zh-Hans": "全部设置",
+    "zh-Hant": "全部設定",
+    "ja": "すべての設定",
+    "ko": "모든 설정"
   },
   "全锥型": {
     "zh-Hans": "全锥型",
@@ -4304,6 +4346,13 @@
     "ja": "外部電源",
     "ko": "외부 전원"
   },
+  "外观": {
+    "en": "Appearance",
+    "zh-Hans": "外观",
+    "zh-Hant": "外觀",
+    "ja": "外観",
+    "ko": "외관"
+  },
   "外观、锁屏与管理访问": {
     "zh-Hans": "外观、锁屏与管理访问",
     "zh-Hant": "外觀、鎖定畫面與管理存取",
@@ -4317,6 +4366,13 @@
     "zh-Hant": "外部埠",
     "ja": "外部ポート",
     "ko": "외부 항구"
+  },
+  "夜空壁纸": {
+    "en": "Night sky wallpaper",
+    "zh-Hans": "夜空壁纸",
+    "zh-Hant": "夜空桌布",
+    "ja": "夜空の壁紙",
+    "ko": "밤하늘 배경"
   },
   "夜间省电": {
     "zh-Hans": "夜间省电",
@@ -4492,6 +4548,20 @@
     "en": "Complete input to apply. Interrupting a service requires confirmation.",
     "ja": "入力を完了すると適用します。サービスを中断する場合は確認します。",
     "ko": "입력을 완료하면 적용됩니다. 서비스 중단이 필요한 경우 먼저 확인합니다."
+  },
+  "定时任务": {
+    "en": "Schedules",
+    "zh-Hans": "定时任务",
+    "zh-Hant": "定時任務",
+    "ja": "スケジュール",
+    "ko": "예약 작업"
+  },
+  "定时重启": {
+    "en": "Timed reboot",
+    "zh-Hans": "定时重启",
+    "zh-Hant": "定時重新啟動",
+    "ja": "定時再起動",
+    "ko": "예약 재시작"
   },
   "实时": {
     "en": "Live",
@@ -4926,6 +4996,13 @@
     "zh-Hant": "已填寫",
     "ja": "入力済み",
     "ko": "입력됨"
+  },
+  "已存的 Wi-Fi": {
+    "en": "Saved Wi-Fi",
+    "zh-Hans": "已存的 Wi-Fi",
+    "zh-Hant": "已儲存的 Wi-Fi",
+    "ja": "保存済み Wi-Fi",
+    "ko": "저장된 Wi-Fi"
   },
   "已安装": {
     "en": "Installed",
@@ -5928,6 +6005,13 @@
     "ja": "スキャンオペレーター",
     "ko": "스캔 운영자"
   },
+  "扫描附近 Wi-Fi": {
+    "en": "Scan nearby Wi-Fi",
+    "zh-Hans": "扫描附近 Wi-Fi",
+    "zh-Hant": "掃描附近 Wi-Fi",
+    "ja": "近くの Wi-Fi を検索",
+    "ko": "주변 Wi-Fi 검색"
+  },
   "扫描附近网络并选择注册方式。": {
     "en": "Scanning the nearby network and choosing a registration method.",
     "zh-Hans": "扫描附近网络并选择注册方式。",
@@ -5955,6 +6039,13 @@
     "zh-Hant": "把入站埠對映至指定區域網裝置。目標應啟用自己的防火牆。",
     "ja": "ステーション端口を指定ローカルネットワークデバイスにマッピングします. ターゲットは,自分の防火壁を有効にすべきです.",
     "ko": "입구 포트를 지정된 로컬 네트워크 장치에 매핑합니다. 대상은 자신의 방화벽을 활성화해야 합니다."
+  },
+  "把别的 Wi-Fi 当作上网来源，代替 SIM 卡。": {
+    "en": "Use another Wi-Fi as the internet source instead of the SIM.",
+    "zh-Hans": "把别的 Wi-Fi 当作上网来源，代替 SIM 卡。",
+    "zh-Hant": "把別的 Wi-Fi 當作上網來源，代替 SIM 卡。",
+    "ja": "SIM の代わりに別の Wi-Fi をインターネット回線として使います。",
+    "ko": "SIM 대신 다른 Wi-Fi를 인터넷 연결로 사용합니다."
   },
   "抖动 / ms": {
     "en": "Jitter / ms",
@@ -6684,6 +6775,13 @@
     "ja": "有効な測定値なし",
     "ko": "유효한 측정값 없음"
   },
+  "更多设置": {
+    "en": "More settings",
+    "zh-Hans": "更多设置",
+    "zh-Hant": "更多設定",
+    "ja": "その他の設定",
+    "ko": "추가 설정"
+  },
   "更改 PIN": {
     "en": "Change PIN",
     "zh-Hans": "更改 PIN",
@@ -7117,6 +7215,13 @@
     "en": "Monthly data",
     "ja": "今月の通信量",
     "ko": "이번 달 데이터"
+  },
+  "本机": {
+    "en": "This device",
+    "zh-Hans": "本机",
+    "zh-Hant": "本機",
+    "ja": "この端末",
+    "ko": "이 기기"
   },
   "本机代理运行中": {
     "en": "Local proxy running",
@@ -8875,6 +8980,13 @@
     "ja": "無効なメッセージ ID",
     "ko": "유효하지 않은 메시지 아이디"
   },
+  "短信转发": {
+    "en": "Forward SMS",
+    "zh-Hans": "短信转发",
+    "zh-Hant": "簡訊轉寄",
+    "ja": "SMS 転送",
+    "ko": "SMS 전달"
+  },
   "确认": {
     "en": "Confirm",
     "zh-Hans": "确认",
@@ -9337,6 +9449,13 @@
     "ko": "결과",
     "zh-Hant": "結果"
   },
+  "给手机供电": {
+    "en": "Power your phone",
+    "zh-Hans": "给手机供电",
+    "zh-Hant": "為手機供電",
+    "ja": "スマホに給電",
+    "ko": "휴대폰 충전"
+  },
   "给访客提供单独的 Wi-Fi。": {
     "en": "It also provides a separate Wi-Fi connection to visitors.",
     "zh-Hans": "给访客提供单独的 Wi-Fi。",
@@ -9421,6 +9540,13 @@
     "ja": "ネットワーク PLMN",
     "ko": "네트워크 PLMN"
   },
+  "网络、DNS 与系统": {
+    "en": "Network, DNS and system",
+    "zh-Hans": "网络、DNS 与系统",
+    "zh-Hant": "網路、DNS 與系統",
+    "ja": "ネットワーク、DNS、システム",
+    "ko": "네트워크, DNS, 시스템"
+  },
   "网络不可用": {
     "zh-Hans": "网络不可用",
     "en": "Network unavailable",
@@ -9504,6 +9630,13 @@
     "zh-Hant": "網路鎖解鎖",
     "ja": "ネットワークロック解除",
     "ko": "네트워크 잠금 해제"
+  },
+  "网速测试": {
+    "en": "Speed test",
+    "zh-Hans": "网速测试",
+    "zh-Hant": "網速測試",
+    "ja": "速度テスト",
+    "ko": "속도 테스트"
   },
   "耗时": {
     "zh-Hans": "耗时",
@@ -10751,6 +10884,13 @@
     "ja": "転送・アクセス制御・QoS",
     "ko": "전달, 접근 규칙 및 QoS"
   },
+  "转发到手机": {
+    "en": "To your phone",
+    "zh-Hans": "转发到手机",
+    "zh-Hant": "轉寄到手機",
+    "ja": "スマホへ転送",
+    "ko": "휴대폰으로 전달"
+  },
   "转发成功": {
     "en": "Forwarded successfully",
     "zh-Hans": "转发成功",
@@ -11759,6 +11899,13 @@
     "ja": "画面ロックと PIN",
     "ko": "화면 잠금 및 PIN"
   },
+  "锁屏密码": {
+    "en": "Lock password",
+    "zh-Hans": "锁屏密码",
+    "zh-Hant": "鎖定畫面密碼",
+    "ja": "ロックのパスワード",
+    "ko": "잠금 비밀번호"
+  },
   "错误 PIN 会扣除次数，用尽后需要 PUK。SIM PIN 与本屏锁屏密码是两个独立的密码。": {
     "en": "The error PIN will deduct the number of times it is used. PUK SIM PIN is two separate passwords with this screen lock screen.",
     "zh-Hans": "错误 PIN 会扣除次数，用尽后需要 PUK。SIM PIN 与本屏锁屏密码是两个独立的密码。",
@@ -12046,6 +12193,13 @@
     "ja": "プレビュープラン",
     "ko": "미리보기 계획"
   },
+  "预览：中继需要固件支持，尚未在这台 U60 上确认，目前不能使用。": {
+    "en": "Preview only: repeater mode needs firmware support that hasn't been confirmed on this U60, so it doesn't work yet.",
+    "zh-Hans": "预览：中继需要固件支持，尚未在这台 U60 上确认，目前不能使用。",
+    "zh-Hant": "預覽：中繼需要韌體支援，尚未在這台 U60 上確認，目前無法使用。",
+    "ja": "プレビュー：中継にはファームウェアの対応が必要で、この U60 ではまだ確認できていないため、現在は使えません。",
+    "ko": "미리보기: 중계 모드는 펌웨어 지원이 필요하며 이 U60에서 아직 확인되지 않아 지금은 사용할 수 없습니다."
+  },
   "频段": {
     "en": "Band",
     "zh-Hans": "频段",
@@ -12178,6 +12332,13 @@
     "en": "Advanced network",
     "ja": "高度なネットワーク設定",
     "ko": "고급 네트워크"
+  },
+  "高级设置": {
+    "en": "Advanced",
+    "zh-Hans": "高级设置",
+    "zh-Hant": "進階設定",
+    "ja": "詳細設定",
+    "ko": "고급 설정"
   },
   "高速移动时，由设备自动管理。": {
     "en": "The device manages this automatically while travelling at high speed.",

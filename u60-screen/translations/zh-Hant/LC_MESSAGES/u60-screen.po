@@ -41,6 +41,15 @@ msgstr "−2 分鐘"
 msgid "上滑解锁"
 msgstr "上滑解鎖"
 
+msgid "下载与上传"
+msgstr "下載與上傳"
+
+msgid "中继"
+msgstr "中繼"
+
+msgid "中继设置"
+msgstr "中繼設定"
+
 msgid "二维码"
 msgstr "QR 碼"
 
@@ -49,6 +58,9 @@ msgstr "今日流量"
 
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "優先回應與處理能力，溫度與功耗可能上升。"
+
+msgid "使用 5 GHz"
+msgstr "使用 5 GHz"
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "保留 Wi-Fi、USB 與本機管理"
@@ -67,6 +79,9 @@ msgstr "訊號較弱"
 
 msgid "修改解锁密码"
 msgstr "修改解鎖密碼"
+
+msgid "全部设置"
+msgstr "全部設定"
 
 msgid "关机"
 msgstr "關機"
@@ -92,6 +107,9 @@ msgstr "重新整理狀態"
 msgid "刷新连接状态"
 msgstr "重新整理連線狀態"
 
+msgid "反向供电"
+msgstr "反向供電"
+
 msgid "取消"
 msgstr "取消"
 
@@ -113,11 +131,23 @@ msgstr "均衡"
 msgid "处理中"
 msgstr "處理中"
 
+msgid "外观"
+msgstr "外觀"
+
+msgid "夜空壁纸"
+msgstr "夜空桌布"
+
 msgid "子网路由与连通性检测"
 msgstr "子網路由與連通性檢測"
 
 msgid "完成"
 msgstr "完成"
+
+msgid "定时任务"
+msgstr "定時任務"
+
+msgid "定时重启"
+msgstr "定時重新啟動"
 
 msgid "密码"
 msgstr "密碼"
@@ -125,8 +155,14 @@ msgstr "密碼"
 msgid "密码解锁"
 msgstr "密碼解鎖"
 
+msgid "屏幕"
+msgstr "螢幕"
+
 msgid "屏幕亮度  "
 msgstr "螢幕亮度  "
+
+msgid "已存的 Wi-Fi"
+msgstr "已儲存的 Wi-Fi"
 
 msgid "已开启 · 6–12 位数字密码"
 msgstr "已開啟 · 6–12 位數字密碼"
@@ -164,6 +200,15 @@ msgstr "效能模式"
 msgid "所选模式尚未生效，请核对设备状态。"
 msgstr "所選模式尚未生效，請核對裝置狀態。"
 
+msgid "扫描附近 Wi-Fi"
+msgstr "掃描附近 Wi-Fi"
+
+msgid "扫码"
+msgstr "掃碼"
+
+msgid "把别的 Wi-Fi 当作上网来源，代替 SIM 卡。"
+msgstr "把別的 Wi-Fi 當作上網來源，代替 SIM 卡。"
+
 msgid "按需调整，兼顾响应、温度与功耗。"
 msgstr "按需調整，兼顧回應、溫度與功耗。"
 
@@ -191,6 +236,9 @@ msgstr "顯示密碼"
 msgid "暂无有效读数"
 msgstr "暫無有效讀數"
 
+msgid "更多设置"
+msgstr "更多設定"
+
 msgid "服务摘要"
 msgstr "服務摘要"
 
@@ -202,6 +250,9 @@ msgstr "未連線"
 
 msgid "本月流量"
 msgstr "本月流量"
+
+msgid "本机"
+msgstr "本機"
 
 msgid "本次 "
 msgstr "本次 "
@@ -281,6 +332,9 @@ msgstr "省電"
 msgid "知道了"
 msgstr "知道了"
 
+msgid "短信转发"
+msgstr "簡訊轉寄"
+
 msgid "确认"
 msgstr "確認"
 
@@ -302,8 +356,20 @@ msgstr "立即鎖屏"
 msgid "管理"
 msgstr "管理"
 
+msgid "给手机供电"
+msgstr "為手機供電"
+
+msgid "网络、DNS 与系统"
+msgstr "網路、DNS 與系統"
+
+msgid "网速测试"
+msgstr "網速測試"
+
 msgid "自动"
 msgstr "自動"
+
+msgid "自动休眠"
+msgstr "自動休眠"
 
 msgid "自动熄屏"
 msgstr "自動熄屏"
@@ -328,6 +394,9 @@ msgstr "設定解鎖密碼"
 
 msgid "跟随系统"
 msgstr "跟隨系統"
+
+msgid "转发到手机"
+msgstr "轉寄到手機"
 
 msgid "输入 "
 msgstr "輸入 "
@@ -356,6 +425,9 @@ msgstr "重啟裝置"
 msgid "重新连接"
 msgstr "重新連線"
 
+msgid "锁屏密码"
+msgstr "鎖定畫面密碼"
+
 msgid "降低处理频率，吞吐能力可能下降。"
 msgstr "降低處理頻率，吞吐能力可能下降。"
 
@@ -371,11 +443,17 @@ msgstr "隱藏僅影響首頁顯示，不會停止服務。"
 msgid "隐藏密码"
 msgstr "隱藏密碼"
 
+msgid "预览：中继需要固件支持，尚未在这台 U60 上确认，目前不能使用。"
+msgstr "預覽：中繼需要韌體支援，尚未在這台 U60 上確認，目前無法使用。"
+
 msgid "飞行模式"
 msgstr "飛航模式"
 
 msgid "首页布局"
 msgstr "首頁配置"
+
+msgid "高级设置"
+msgstr "進階設定"
 
 msgid "高铁优化"
 msgstr "高鐵最佳化"

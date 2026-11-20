@@ -41,6 +41,15 @@ msgstr "−2분"
 msgid "上滑解锁"
 msgstr "위로 밀어 잠금 해제"
 
+msgid "下载与上传"
+msgstr "다운로드 및 업로드"
+
+msgid "中继"
+msgstr "중계"
+
+msgid "中继设置"
+msgstr "중계 설정"
+
 msgid "二维码"
 msgstr "QR 코드"
 
@@ -49,6 +58,9 @@ msgstr "오늘 데이터"
 
 msgid "优先响应与处理能力，温度和功耗可能上升。"
 msgstr "응답 속도를 우선하며 온도와 전력 소비가 늘 수 있습니다."
+
+msgid "使用 5 GHz"
+msgstr "5 GHz 사용"
 
 msgid "保留 Wi-Fi、USB 与本地管理"
 msgstr "Wi-Fi, USB, 로컬 관리 유지"
@@ -67,6 +79,9 @@ msgstr "신호 약함"
 
 msgid "修改解锁密码"
 msgstr "잠금 해제 PIN 변경"
+
+msgid "全部设置"
+msgstr "모든 설정"
 
 msgid "关机"
 msgstr "전원 끄기"
@@ -92,6 +107,9 @@ msgstr "상태 새로 고침"
 msgid "刷新连接状态"
 msgstr "연결 상태를 업데이트"
 
+msgid "反向供电"
+msgstr "반전 충전"
+
 msgid "取消"
 msgstr "취소"
 
@@ -113,11 +131,23 @@ msgstr "균형"
 msgid "处理中"
 msgstr "처리 중"
 
+msgid "外观"
+msgstr "외관"
+
+msgid "夜空壁纸"
+msgstr "밤하늘 배경"
+
 msgid "子网路由与连通性检测"
 msgstr "서브넷 연결 검사"
 
 msgid "完成"
 msgstr "완료"
+
+msgid "定时任务"
+msgstr "예약 작업"
+
+msgid "定时重启"
+msgstr "예약 재시작"
 
 msgid "密码"
 msgstr "비밀번호"
@@ -125,8 +155,14 @@ msgstr "비밀번호"
 msgid "密码解锁"
 msgstr "PIN 잠금 해제"
 
+msgid "屏幕"
+msgstr "화면"
+
 msgid "屏幕亮度  "
 msgstr "화면 밝기  "
+
+msgid "已存的 Wi-Fi"
+msgstr "저장된 Wi-Fi"
 
 msgid "已开启 · 6–12 位数字密码"
 msgstr "활성화됨 · 숫자 6~12자리 PIN"
@@ -164,6 +200,15 @@ msgstr "성능 모드"
 msgid "所选模式尚未生效，请核对设备状态。"
 msgstr "선택한 모드가 적용되지 않았습니다. 기기 상태를 확인하세요."
 
+msgid "扫描附近 Wi-Fi"
+msgstr "주변 Wi-Fi 검색"
+
+msgid "扫码"
+msgstr "QR 코드를 스캔"
+
+msgid "把别的 Wi-Fi 当作上网来源，代替 SIM 卡。"
+msgstr "SIM 대신 다른 Wi-Fi를 인터넷 연결로 사용합니다."
+
 msgid "按需调整，兼顾响应、温度与功耗。"
 msgstr "응답 속도, 온도, 전력 소비를 필요에 따라 조절합니다."
 
@@ -191,6 +236,9 @@ msgstr "암호 표시"
 msgid "暂无有效读数"
 msgstr "유효한 측정값 없음"
 
+msgid "更多设置"
+msgstr "추가 설정"
+
 msgid "服务摘要"
 msgstr "서비스 요약"
 
@@ -202,6 +250,9 @@ msgstr "오프라인"
 
 msgid "本月流量"
 msgstr "이번 달 데이터"
+
+msgid "本机"
+msgstr "이 기기"
 
 msgid "本次 "
 msgstr "이번 연결 "
@@ -281,6 +332,9 @@ msgstr "절전"
 msgid "知道了"
 msgstr "알았어"
 
+msgid "短信转发"
+msgstr "SMS 전달"
+
 msgid "确认"
 msgstr "확인"
 
@@ -302,8 +356,20 @@ msgstr "이제 잠겨"
 msgid "管理"
 msgstr "관리"
 
+msgid "给手机供电"
+msgstr "휴대폰 충전"
+
+msgid "网络、DNS 与系统"
+msgstr "네트워크, DNS, 시스템"
+
+msgid "网速测试"
+msgstr "속도 테스트"
+
 msgid "自动"
 msgstr "자동"
+
+msgid "自动休眠"
+msgstr "자동 절전"
 
 msgid "自动熄屏"
 msgstr "자동 화면 끄기"
@@ -328,6 +394,9 @@ msgstr "잠금 해제 PIN 설정"
 
 msgid "跟随系统"
 msgstr "시스템 테마"
+
+msgid "转发到手机"
+msgstr "휴대폰으로 전달"
 
 msgid "输入 "
 msgstr "입력"
@@ -356,6 +425,9 @@ msgstr "장치 다시 시작"
 msgid "重新连接"
 msgstr "다시 연결"
 
+msgid "锁屏密码"
+msgstr "잠금 비밀번호"
+
 msgid "降低处理频率，吞吐能力可能下降。"
 msgstr "CPU 주파수를 낮춥니다. 처리량이 줄 수 있습니다."
 
@@ -371,11 +443,17 @@ msgstr "숨기기는 홈 화면 표시에만 적용되며 서비스는 계속 �
 msgid "隐藏密码"
 msgstr "암호 숨기기"
 
+msgid "预览：中继需要固件支持，尚未在这台 U60 上确认，目前不能使用。"
+msgstr "미리보기: 중계 모드는 펌웨어 지원이 필요하며 이 U60에서 아직 확인되지 않아 지금은 사용할 수 없습니다."
+
 msgid "飞行模式"
 msgstr "비행기 모드"
 
 msgid "首页布局"
 msgstr "홈 화면 구성"
+
+msgid "高级设置"
+msgstr "고급 설정"
 
 msgid "高铁优化"
 msgstr "고속철도 최적화"

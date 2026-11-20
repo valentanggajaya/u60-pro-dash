@@ -33,7 +33,7 @@ jobs:
           rm -rf "$out" && mkdir -p "$out"
           for lang in en zh-Hans; do
             for theme in dark light; do
-              for page in lock overview connect manage quick-controls signal-live; do
+              for page in lock overview connect manage quick-controls signal-live wifi-repeater; do
                 "$bin" --screenshot "$out/$lang-$theme-$page.png" --page "$page" --language "$lang" "--$theme" \
                   || echo "::warning::could not render $page ($lang, $theme)"
               done

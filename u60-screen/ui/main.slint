@@ -2,6 +2,7 @@ import { Palette, Label, Paragraph, TapButton, MenuRow, Stat, Brightness, Traffi
 import { LockScreen, PinPad } from "lock.slint";
 import { TextEditor } from "editor.slint";
 import { StatusBar } from "status.slint";
+import { SettingTile, SettingIcon, Toggle } from "settings.slint";
 import { ModeSummary, OperatingControls } from "operating.slint";
 import { Reading, Trend, TrendPlot, Meter, DataRow, ReadingTable, TrendCard, MeterGrid, DataTable } from "data.slint";
 import "../assets/U60Sans.ttf";
@@ -129,6 +130,8 @@ export component Screen inherits Window {
     in-out property <string> today-data: "1.24 GB";
     in-out property <string> month-data: "62.8 GB";
     in-out property <float> month-fraction: 0.42;
+    in-out property <string> device-cpu: "14%";
+    in-out property <string> device-temp: "39°C";
     callback swipe-unlock;
     pure function level-color(level: int) -> color {
         return level >= 3 ? Palette.good : level == 2 ? Palette.warning : level == 1 ? Palette.bad : Palette.text;
@@ -224,6 +227,11 @@ export component Screen inherits Window {
     focus := FocusScope {
         width: parent.width; height: parent.height;
         AmbientBackground { width: parent.width; height: parent.height; }
+        // Text-only pages sit straight on the wallpaper, so dim it there; the
+        // card pages (home, Manage board, repeater) keep it bright.
+        if Palette.dark && root.view != 0 && root.view != 8 && root.view != 9: Rectangle {
+            width: parent.width; height: parent.height; background: #070b13c8;
+        }
         key-pressed(event) => {
             root.activity();
             if root.pin-visible {
@@ -301,9 +309,9 @@ export component Screen inherits Window {
                 // today / connected, battery; then quick metrics, Wi-Fi and
                 // services further down. Text is at least 13 px.
                 if root.view == 0: GlassPanel {
-                    translucent: true; height: 106px;
+                    translucent: true; height: 102px;
                     Label {
-                        x: 14px; y: 6px; width: 140px; height: 46px;
+                        x: 14px; y: 4px; width: 140px; height: 46px;
                         text: root.airplane-state == 1 || root.network-badge == "" ? "—" : root.network-badge;
                         font-size: 38px; font-weight: 700; vertical-alignment: center;
                     }
@@ -319,14 +327,14 @@ export component Screen inherits Window {
                         }
                     }
                     Label {
-                        x: 14px; y: 52px; width: parent.width - 28px; height: 22px;
+                        x: 14px; y: 49px; width: parent.width - 28px; height: 22px;
                         text: root.carrier-label
                             + (root.signal-bands != "" ? " · " + root.signal-bands : "")
                             + (root.bandwidth != "" ? " · " + root.bandwidth : "");
                         font-size: 14px; vertical-alignment: center;
                     }
                     HorizontalLayout {
-                        x: 14px; y: 76px; width: parent.width - 44px; height: 24px; spacing: 14px; alignment: start;
+                        x: 14px; y: 73px; width: parent.width - 44px; height: 24px; spacing: 14px; alignment: start;
                         for reading in [
                             { title: "RSRP", value: root.signal-strength, unit: " dBm", level: root.rsrp-level },
                             { title: "SINR", value: root.signal-sinr, unit: " dB", level: root.sinr-level },
@@ -341,11 +349,11 @@ export component Screen inherits Window {
                             }
                         }
                     }
-                    Label { x: parent.width - 24px; y: 76px; width: 12px; height: 24px; text: "›"; font-size: 20px; color: Palette.accent-ink; vertical-alignment: center; }
+                    Label { x: parent.width - 24px; y: 73px; width: 12px; height: 24px; text: "›"; font-size: 20px; color: Palette.accent-ink; vertical-alignment: center; }
                     TouchArea { clicked => { root.open("signal-live"); } }
                 }
                 if root.view == 0: GlassPanel {
-                    translucent: true; height: 118px;
+                    translucent: true; height: 114px;
                     Label { x: 14px; y: 10px; width: 130px; height: 18px; text: @tr("↓ 下载"); font-size: 13px; color: Palette.muted; }
                     Label { x: parent.width - 144px; y: 10px; width: 130px; height: 18px; text: @tr("↑ 上传"); font-size: 13px; color: Palette.muted; horizontal-alignment: right; }
                     HorizontalLayout {
@@ -359,7 +367,7 @@ export component Screen inherits Window {
                         Label { text: "Mbps"; font-size: 13px; color: Palette.muted; vertical-alignment: bottom; }
                     }
                     Rectangle {
-                        x: 14px; y: 78px; width: parent.width - 28px; height: 32px; clip: true;
+                        x: 14px; y: 76px; width: parent.width - 28px; height: 30px; clip: true;
                         Rectangle { y: parent.height - 1px; width: parent.width; height: 1px; background: Palette.line; }
                         if root.airplane-state != 1 && root.lock-download-path != "": Path {
                             width: parent.width; height: parent.height; commands: root.lock-download-path;
@@ -475,6 +483,125 @@ export component Screen inherits Window {
                     for link in [{title: @tr("流量套餐"), id: "usage"}, {title: @tr("连接记录"), id: "history"}]: Rectangle {
                         Label { text: link.title + " ›"; font-size: 14px; color: Palette.accent-ink; vertical-alignment: center; }
                         TouchArea { clicked => { root.open(link.id); } }
+                    }
+                }
+                // Manage as a settings board: tiles for the everyday settings
+                // (each opens its existing page), device load, then every
+                // Manage group as before under "All settings".
+                if root.view == 8: VerticalLayout {
+                    spacing: 8px;
+                    GlassPanel {
+                        translucent: true; height: 68px;
+                        Rectangle {
+                            x: 12px; y: 9px; width: 30px; height: 50px; border-radius: 6px; clip: true;
+                            border-width: 1px; border-color: Palette.rim; background: Palette.bg;
+                            Image {
+                                width: parent.width; height: parent.height; image-fit: cover;
+                                source: Palette.dark ? Palette.wallpaper-dark : Palette.material-light;
+                            }
+                        }
+                        Label { x: 54px; y: 12px; width: parent.width - 80px; height: 22px; text: @tr("外观"); font-size: 15px; font-weight: 650; vertical-alignment: center; }
+                        Label {
+                            x: 54px; y: 36px; width: parent.width - 80px; height: 18px;
+                            text: (Palette.dark ? @tr("深色") : @tr("浅色")) + " · " + @tr("夜空壁纸");
+                            font-size: 12px; color: Palette.muted; vertical-alignment: center;
+                        }
+                        Label { x: parent.width - 22px; y: 0px; width: 12px; height: parent.height; text: "›"; font-size: 20px; color: Palette.muted; vertical-alignment: center; }
+                        TouchArea { clicked => { root.open("screen-prefs"); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px; height: 56px;
+                        SettingTile {
+                            title: @tr("屏幕"); subtitle: root.brightness + "% · " + root.sleep-label; tint: #d99a00;
+                            icon: "M 16 12 A 4 4 0 1 1 15.99 11.9 M 12 2 V 4 M 12 20 V 22 M 2 12 H 4 M 20 12 H 22 M 4.9 4.9 L 6.3 6.3 M 17.7 17.7 L 19.1 19.1 M 4.9 19.1 L 6.3 17.7 M 17.7 6.3 L 19.1 4.9";
+                            clicked => { root.open("screen-prefs"); }
+                        }
+                        SettingTile {
+                            title: @tr("自动休眠"); subtitle: @tr("省电"); tint: #1f9d55;
+                            icon: "M 20 14.5 A 8 8 0 1 1 9.5 4 A 6.5 6.5 0 0 0 20 14.5 Z";
+                            clicked => { root.open("auto-sleep"); }
+                        }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px; height: 56px;
+                        SettingTile { title: @tr("锁屏密码"); toggle: root.pin-enabled ? 1 : 0; clicked => { root.open("screen-lock"); } }
+                        SettingTile { title: @tr("性能模式"); subtitle: root.performance-label; chevron: true; clicked => { root.open("power-save"); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px; height: 56px;
+                        SettingTile { title: @tr("电池"); subtitle: root.battery + " · " + root.power-label; chevron: true; clicked => { root.open("battery-details"); } }
+                        SettingTile { title: @tr("反向供电"); subtitle: @tr("给手机供电"); chevron: true; clicked => { root.open("usb"); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px; height: 56px;
+                        SettingTile { title: @tr("网速测试"); subtitle: @tr("下载与上传"); chevron: true; clicked => { root.open("speedtest"); } }
+                        SettingTile { title: @tr("高级设置"); subtitle: @tr("网络、DNS 与系统"); chevron: true; clicked => { root.open("advanced-network"); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px; height: 56px;
+                        SettingTile {
+                            title: @tr("短信转发"); subtitle: @tr("转发到手机"); tint: #7c5cf0;
+                            icon: "M 6 16 V 11 A 6 6 0 0 1 18 11 V 16 L 20 18 H 4 Z M 10 20.5 A 2 2 0 0 0 14 20.5";
+                            clicked => { root.open("sms-forward"); }
+                        }
+                        SettingTile {
+                            title: @tr("定时任务"); subtitle: @tr("定时重启"); tint: #2f7cf6;
+                            icon: "M 12 3 A 9 9 0 1 1 11.99 3 M 12 7 V 12 L 15 14";
+                            clicked => { root.open("scheduler"); }
+                        }
+                    }
+                    GlassPanel {
+                        translucent: true; height: 44px;
+                        Label { x: 12px; y: 0px; width: 70px; height: parent.height; text: @tr("本机"); font-size: 13px; color: Palette.muted; vertical-alignment: center; }
+                        Label {
+                            x: 78px; y: 0px; width: parent.width - 104px; height: parent.height;
+                            text: "CPU " + root.device-cpu + " · " + root.device-temp + " · " + @tr("内存") + " " + (root.memory-percent >= 0 ? root.memory-percent + "%" : "—");
+                            font-size: 13px; vertical-alignment: center;
+                        }
+                        Label { x: parent.width - 22px; y: 0px; width: 12px; height: parent.height; text: "›"; font-size: 20px; color: Palette.muted; vertical-alignment: center; }
+                        TouchArea { clicked => { root.open("resources"); } }
+                    }
+                    Label { text: @tr("全部设置"); height: 26px; font-size: 13px; color: Palette.muted; vertical-alignment: bottom; }
+                    for entry in root.entries: MenuRow { title: entry.title; subtitle: entry.subtitle; tag: entry.tag; clicked => { root.open(entry.id); } }
+                }
+                // Wi-Fi repeater: a visual preview only. The agent has no
+                // repeater API and the firmware support is unconfirmed, so
+                // nothing here acts on the router.
+                if root.view == 9: VerticalLayout {
+                    spacing: 8px;
+                    Rectangle {
+                        height: preview-note.preferred-height + 16px; border-radius: 10px;
+                        background: Palette.warning.with-alpha(0.14);
+                        preview-note := Paragraph {
+                            x: 12px; y: 8px; width: parent.width - 24px;
+                            text: @tr("预览：中继需要固件支持，尚未在这台 U60 上确认，目前不能使用。");
+                            font-size: 13px; color: Palette.warning;
+                        }
+                    }
+                    GlassPanel {
+                        translucent: true; height: 66px;
+                        Label { x: 14px; y: 8px; width: parent.width - 80px; height: 22px; text: @tr("中继"); font-size: 15px; font-weight: 650; vertical-alignment: center; }
+                        Label {
+                            x: 14px; y: 30px; width: parent.width - 80px; height: 32px;
+                            text: @tr("把别的 Wi-Fi 当作上网来源，代替 SIM 卡。"); font-size: 12px; color: Palette.muted; wrap: word-wrap;
+                        }
+                        Toggle { x: parent.width - 54px; y: 22px; on: false; }
+                    }
+                    GlassPanel {
+                        translucent: true; height: 4 * 52px;
+                        for row[i] in [
+                            { title: @tr("已存的 Wi-Fi"), value: "", tint: #1f9d55, icon: "M 7 4 H 17 V 20 L 12 16 L 7 20 Z" },
+                            { title: @tr("扫描附近 Wi-Fi"), value: "", tint: #2f7cf6, icon: "M 3 9 Q 12 1 21 9 M 6.5 12.5 Q 12 7.5 17.5 12.5 M 10 16 Q 12 14.5 14 16 M 12 19.5 L 12 19.6" },
+                            { title: @tr("中继设置"), value: @tr("使用 5 GHz"), tint: #64748b, icon: "M 4 7 H 20 M 4 17 H 20 M 9 4 V 10 M 15 14 V 20" },
+                            { title: @tr("更多设置"), value: @tr("扫码"), tint: #64748b, icon: "M 4 4 H 10 V 10 H 4 Z M 14 4 H 20 V 10 H 14 Z M 4 14 H 10 V 20 H 4 Z M 14 14 H 16 M 18 14 H 20 V 16 M 14 18 H 16 V 20 M 20 20 H 18" }
+                        ]: Rectangle {
+                            y: i * 52px; height: 52px;
+                            if i > 0: Rectangle { x: 50px; y: 0px; width: parent.width - 62px; height: 1px; background: Palette.line; }
+                            SettingIcon { x: 12px; y: 12px; glyph: row.icon; tint: row.tint; }
+                            Label { x: 50px; y: 0px; width: parent.width - 170px; height: parent.height; text: row.title; font-size: 14px; vertical-alignment: center; }
+                            Label { x: parent.width - 124px; y: 0px; width: 96px; height: parent.height; text: row.value; font-size: 13px; color: Palette.muted; horizontal-alignment: right; vertical-alignment: center; }
+                            Label { x: parent.width - 22px; y: 0px; width: 12px; height: parent.height; text: "›"; font-size: 20px; color: Palette.muted; vertical-alignment: center; }
+                        }
                     }
                 }
                 if root.view == 1: VerticalLayout {

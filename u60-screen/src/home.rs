@@ -252,6 +252,9 @@ impl Summary {
             metrics,
             |r| r.id.clone(),
         ));
+        // Device load for the Manage board's bottom row.
+        ui.set_device_cpu(val("cpu").into());
+        ui.set_device_temp(val("temperature").into());
         // Lock screen rings and home cards: memory, today / month data and,
         // when a monthly limit is on, how much of it is used.
         if demo {
