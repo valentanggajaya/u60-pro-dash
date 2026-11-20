@@ -53,6 +53,17 @@ impl Drop for Backlight {
     }
 }
 
+/// Longest touch that still counts as a wake tap.
+const WAKE_TAP_HOLD: Duration = Duration::from_millis(350);
+/// Longest time from the first wake tap's release to the second's.
+const WAKE_TAP_GAP: Duration = Duration::from_millis(600);
+
+/// Both points within a finger's width (logical pixels), so a swipe or two
+/// touches far apart are not a double tap.
+fn near(a: LogicalPosition, b: LogicalPosition) -> bool {
+    (a.x - b.x).abs() <= 48. && (a.y - b.y).abs() <= 48.
+}
+
 pub fn run(
     app: &App,
     window: Rc<MinimalSoftwareWindow>,
@@ -74,7 +85,12 @@ pub fn run(
     let start = Instant::now();
     let mut first = true;
     let mut asleep = false;
-    let mut wake_touch = false;
+    // Double tap to wake: while the screen is off, touches never reach the UI.
+    // A "tap" is a short touch that barely moves; two taps close together in
+    // time and place wake the screen. A single brush (a pocket, a bag) does
+    // nothing. The power key still wakes with one short press.
+    let mut wake_press: Option<(Instant, LogicalPosition)> = None;
+    let mut wake_tap: Option<(Instant, LogicalPosition)> = None;
     display.run(&window, rotate, || {
         if stop.load(Ordering::Relaxed)
             || seconds.is_some_and(|limit| start.elapsed() >= Duration::from_secs(limit))
@@ -117,19 +133,37 @@ pub fn run(
                         button: PointerEventButton::Left,
                     });
                     window.dispatch_event(WindowEvent::PointerExited);
-                    wake_touch = false;
+                    wake_press = None;
+                    wake_tap = None;
                 }
                 input::Input::Pointer(event) => {
-                    if app.ui.get_asleep() {
-                        app.ui.set_asleep(false);
-                        wake_touch = true;
-                    }
-                    if wake_touch {
-                        if matches!(event, WindowEvent::PointerReleased { .. }) {
-                            wake_touch = false;
-                        }
-                    } else {
+                    if !app.ui.get_asleep() {
+                        wake_press = None;
+                        wake_tap = None;
                         window.dispatch_event(event);
+                        continue;
+                    }
+                    match event {
+                        WindowEvent::PointerPressed { position, .. } => {
+                            wake_press = Some((Instant::now(), position));
+                        }
+                        WindowEvent::PointerReleased { position, .. } => {
+                            let tap = wake_press.take().is_some_and(|(at, start)| {
+                                at.elapsed() <= WAKE_TAP_HOLD && near(start, position)
+                            });
+                            let now = Instant::now();
+                            if !tap {
+                                wake_tap = None;
+                            } else if wake_tap.is_some_and(|(at, first)| {
+                                now.duration_since(at) <= WAKE_TAP_GAP && near(first, position)
+                            }) {
+                                wake_tap = None;
+                                app.ui.set_asleep(false);
+                            } else {
+                                wake_tap = Some((now, position));
+                            }
+                        }
+                        _ => {}
                     }
                 }
             }
