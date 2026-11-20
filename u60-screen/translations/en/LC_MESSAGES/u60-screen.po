@@ -53,6 +53,9 @@ msgstr "Repeater settings"
 msgid "二维码"
 msgstr "QR code"
 
+msgid "亮度"
+msgstr "Brightness"
+
 msgid "今日流量"
 msgstr "Today's data"
 
@@ -79,6 +82,9 @@ msgstr "Weak signal"
 
 msgid "修改解锁密码"
 msgstr "Change unlock PIN"
+
+msgid "充电中"
+msgstr "Charging"
 
 msgid "全部设置"
 msgstr "All settings"
@@ -360,7 +366,7 @@ msgid "给手机供电"
 msgstr "Power your phone"
 
 msgid "网络、DNS 与系统"
-msgstr "Network, DNS and system"
+msgstr "Network and system"
 
 msgid "网速测试"
 msgstr "Speed test"
@@ -426,7 +432,7 @@ msgid "重新连接"
 msgstr "Reconnect"
 
 msgid "锁屏密码"
-msgstr "Lock password"
+msgstr "Lock PIN"
 
 msgid "降低处理频率，吞吐能力可能下降。"
 msgstr "Reduce CPU frequency; throughput may decrease."

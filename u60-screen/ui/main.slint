@@ -512,7 +512,7 @@ export component Screen inherits Window {
                     HorizontalLayout {
                         spacing: 8px; height: 56px;
                         SettingTile {
-                            title: @tr("屏幕"); subtitle: root.brightness + "% · " + root.sleep-label; tint: #d99a00;
+                            title: @tr("屏幕"); subtitle: @tr("亮度") + " " + root.brightness + "%"; tint: #d99a00;
                             icon: "M 16 12 A 4 4 0 1 1 15.99 11.9 M 12 2 V 4 M 12 20 V 22 M 2 12 H 4 M 20 12 H 22 M 4.9 4.9 L 6.3 6.3 M 17.7 17.7 L 19.1 19.1 M 4.9 19.1 L 6.3 17.7 M 17.7 6.3 L 19.1 4.9";
                             clicked => { root.open("screen-prefs"); }
                         }
@@ -525,17 +525,17 @@ export component Screen inherits Window {
                     HorizontalLayout {
                         spacing: 8px; height: 56px;
                         SettingTile { title: @tr("锁屏密码"); toggle: root.pin-enabled ? 1 : 0; clicked => { root.open("screen-lock"); } }
-                        SettingTile { title: @tr("性能模式"); subtitle: root.performance-label; chevron: true; clicked => { root.open("power-save"); } }
+                        SettingTile { title: @tr("性能"); subtitle: root.performance-label; clicked => { root.open("power-save"); } }
                     }
                     HorizontalLayout {
                         spacing: 8px; height: 56px;
-                        SettingTile { title: @tr("电池"); subtitle: root.battery + " · " + root.power-label; chevron: true; clicked => { root.open("battery-details"); } }
-                        SettingTile { title: @tr("反向供电"); subtitle: @tr("给手机供电"); chevron: true; clicked => { root.open("usb"); } }
+                        SettingTile { title: @tr("电池"); subtitle: root.battery + (root.charging ? " · " + @tr("充电中") : ""); clicked => { root.open("battery-details"); } }
+                        SettingTile { title: @tr("反向供电"); subtitle: @tr("给手机供电"); clicked => { root.open("usb"); } }
                     }
                     HorizontalLayout {
                         spacing: 8px; height: 56px;
-                        SettingTile { title: @tr("网速测试"); subtitle: @tr("下载与上传"); chevron: true; clicked => { root.open("speedtest"); } }
-                        SettingTile { title: @tr("高级设置"); subtitle: @tr("网络、DNS 与系统"); chevron: true; clicked => { root.open("advanced-network"); } }
+                        SettingTile { title: @tr("网速测试"); subtitle: @tr("下载与上传"); clicked => { root.open("speedtest"); } }
+                        SettingTile { title: @tr("高级设置"); subtitle: @tr("网络、DNS 与系统"); clicked => { root.open("advanced-network"); } }
                     }
                     HorizontalLayout {
                         spacing: 8px; height: 56px;
@@ -579,13 +579,13 @@ export component Screen inherits Window {
                         }
                     }
                     GlassPanel {
-                        translucent: true; height: 66px;
+                        translucent: true; height: 74px;
                         Label { x: 14px; y: 8px; width: parent.width - 80px; height: 22px; text: @tr("中继"); font-size: 15px; font-weight: 650; vertical-alignment: center; }
                         Label {
-                            x: 14px; y: 30px; width: parent.width - 80px; height: 32px;
-                            text: @tr("把别的 Wi-Fi 当作上网来源，代替 SIM 卡。"); font-size: 12px; color: Palette.muted; wrap: word-wrap;
+                            x: 14px; y: 30px; width: parent.width - 80px; height: 38px;
+                            text: @tr("把别的 Wi-Fi 当作上网来源，代替 SIM 卡。"); font-size: 12px; color: Palette.muted; wrap: word-wrap; overflow: clip;
                         }
-                        Toggle { x: parent.width - 54px; y: 22px; on: false; }
+                        Toggle { x: parent.width - 54px; y: 26px; on: false; }
                     }
                     GlassPanel {
                         translucent: true; height: 4 * 52px;

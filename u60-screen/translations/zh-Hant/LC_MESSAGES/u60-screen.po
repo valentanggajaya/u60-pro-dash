@@ -53,6 +53,9 @@ msgstr "中繼設定"
 msgid "二维码"
 msgstr "QR 碼"
 
+msgid "亮度"
+msgstr "亮度"
+
 msgid "今日流量"
 msgstr "今日流量"
 
@@ -79,6 +82,9 @@ msgstr "訊號較弱"
 
 msgid "修改解锁密码"
 msgstr "修改解鎖密碼"
+
+msgid "充电中"
+msgstr "充電中"
 
 msgid "全部设置"
 msgstr "全部設定"

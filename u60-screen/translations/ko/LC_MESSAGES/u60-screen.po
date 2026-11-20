@@ -53,6 +53,9 @@ msgstr "중계 설정"
 msgid "二维码"
 msgstr "QR 코드"
 
+msgid "亮度"
+msgstr "밝기"
+
 msgid "今日流量"
 msgstr "오늘 데이터"
 
@@ -79,6 +82,9 @@ msgstr "신호 약함"
 
 msgid "修改解锁密码"
 msgstr "잠금 해제 PIN 변경"
+
+msgid "充电中"
+msgstr "충전 중"
 
 msgid "全部设置"
 msgstr "모든 설정"

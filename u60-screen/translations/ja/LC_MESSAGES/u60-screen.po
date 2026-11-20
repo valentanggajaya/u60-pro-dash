@@ -53,6 +53,9 @@ msgstr "中継設定"
 msgid "二维码"
 msgstr "QR コード"
 
+msgid "亮度"
+msgstr "明るさ"
+
 msgid "今日流量"
 msgstr "今日のデータ"
 
@@ -79,6 +82,9 @@ msgstr "電波が弱い"
 
 msgid "修改解锁密码"
 msgstr "解除 PIN を変更"
+
+msgid "充电中"
+msgstr "充電中"
 
 msgid "全部设置"
 msgstr "すべての設定"

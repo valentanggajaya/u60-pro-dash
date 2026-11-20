@@ -1777,6 +1777,13 @@
     "ja": "インターネット速度テスト",
     "ko": "인터넷 속도 측정"
   },
+  "亮度": {
+    "en": "Brightness",
+    "zh-Hans": "亮度",
+    "zh-Hant": "亮度",
+    "ja": "明るさ",
+    "ko": "밝기"
+  },
   "仅 3G": {
     "en": "3G only",
     "zh-Hans": "仅 3G",
@@ -9541,7 +9548,7 @@
     "ko": "네트워크 PLMN"
   },
   "网络、DNS 与系统": {
-    "en": "Network, DNS and system",
+    "en": "Network and system",
     "zh-Hans": "网络、DNS 与系统",
     "zh-Hant": "網路、DNS 與系統",
     "ja": "ネットワーク、DNS、システム",
@@ -11900,7 +11907,7 @@
     "ko": "화면 잠금 및 PIN"
   },
   "锁屏密码": {
-    "en": "Lock password",
+    "en": "Lock PIN",
     "zh-Hans": "锁屏密码",
     "zh-Hant": "鎖定畫面密碼",
     "ja": "ロックのパスワード",
